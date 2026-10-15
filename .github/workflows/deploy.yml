@@ -1,0 +1,84 @@
+name: Build & Deploy to GitHub Pages
+
+# Three triggers, one pipeline:
+#  - push to main      → fresh data snapshot + build + deploy
+#  - manual dispatch   → same
+#  - schedule (10 min) → data refresh: the Energy-Charts API does not allow
+#                        browser requests from other origins (CORS) and is
+#                        rate-limited, so the runner fetches the data and the
+#                        site is re-published with the new snapshot.
+#
+# Nothing is committed back to the repository – the snapshot only lives in the
+# deployed artifact. The committed public/data/latest.json is the fallback that
+# is used if the fetch fails (the app then shows the older timestamp).
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: '*/10 * * * *'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never run two deployments at once; a newer run supersedes an older one.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Resolve GitHub Pages base path
+        # Project pages live under /<repo>/, user/organisation pages (repo "<user>.github.io") under /.
+        run: |
+          REPO="${GITHUB_REPOSITORY#*/}"
+          if [[ "$REPO" == *.github.io ]]; then BASE_PATH="/"; else BASE_PATH="/${REPO}/"; fi
+          echo "BASE_PATH=${BASE_PATH}" >> "$GITHUB_ENV"
+          echo "Base path: ${BASE_PATH}"
+
+      - name: Fetch data snapshot from Energy-Charts
+        # Paced to the API's rate limits (~2–3 minutes). If it fails, the committed snapshot is used.
+        continue-on-error: true
+        run: node scripts/update-data.mjs
+
+      - name: Unit tests
+        if: github.event_name != 'schedule'
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
