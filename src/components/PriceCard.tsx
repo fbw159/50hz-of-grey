@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { DayView, GridView } from '@/logic/view';
-import { kwhPerEuro, type HourPrice } from '@/logic/price';
+import { kwhPerEuro, upcomingExtremes, type HourPrice } from '@/logic/price';
 import { PRICE_TEXT, pick, priceMood } from '@/content/texts';
 import { formatBerlinTime, formatBerlinShortDate } from '@/lib/dateUtils';
 import { eurPerMwhToCtPerKwh, formatNumber, MINUS } from '@/lib/formatters';
@@ -97,6 +97,9 @@ export function PriceCard({ view, now, slot }: { view: GridView; now: number; sl
 
   const mood = current ? priceMood(current.value) : null;
   const perEuro = current ? kwhPerEuro(current.value) : null;
+  const isTomorrow = which === 'tomorrow' && !!view.tomorrow;
+  const extremes = day ? (isTomorrow ? day.extremes : upcomingExtremes(day.hours, now)) : null;
+  const when = (h: HourPrice) => (now >= h.start && now < h.end ? `jetzt (${hourLabel(h)})` : hourLabel(h));
 
   return (
     <section id="preis" className="panel scroll-mt-4 p-4" aria-labelledby="price-title" data-testid="price-card">
@@ -163,15 +166,17 @@ export function PriceCard({ view, now, slot }: { view: GridView; now: number; sl
             )}
           </div>
           <Bars day={day} now={now} />
-          {day.extremes && (
+          {extremes && (
             <div className="mt-3 rounded-xl border border-dashed border-line p-3 text-[0.95rem]" data-testid="price-tip">
               <p>
                 <span aria-hidden="true">🧺 </span>
-                <strong>Waschmaschinen-Tipp:</strong> Am günstigsten {which === 'tomorrow' && view.tomorrow ? 'morgen' : 'heute'} {hourLabel(day.extremes.cheapest)} mit {formatPrice(day.extremes.cheapest.avg)}.
+                <strong>Waschmaschinen-Tipp:</strong> Am günstigsten {isTomorrow ? 'morgen' : 'wird es heute noch'} {when(extremes.cheapest)} mit{' '}
+                {formatPrice(extremes.cheapest.avg)}.
               </p>
               <p className="mt-1">
                 <span aria-hidden="true">🕯️ </span>
-                Am teuersten {hourLabel(day.extremes.priciest)} mit {formatPrice(day.extremes.priciest.avg)}. Perfekt für ein Candle-Light-Dinner.
+                Am teuersten {isTomorrow ? '' : 'noch '}
+                {when(extremes.priciest)} mit {formatPrice(extremes.priciest.avg)}. Perfekt für ein Candle-Light-Dinner.
               </p>
             </div>
           )}

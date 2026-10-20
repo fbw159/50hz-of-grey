@@ -164,7 +164,7 @@ export function sourceCaption(id: GenerationCategoryId, mw: number, utilisation:
     case 'windOffshore':
       if (utilisation !== null && utilisation < 0.1) return 'Flaute. Die Windräder machen Pause.';
       if (utilisation !== null && utilisation < 0.3) return 'Weht so mittel.';
-      if (utilisation !== null && utilisation < 0.5) return 'Bläst ordentlich.';
+      if (utilisation !== null && utilisation < 0.65) return 'Bläst ordentlich.';
       return 'Sturm! Die Windräder drehen voll auf.';
     case 'lignite':
       return gw > 12 ? 'Läuft auf Hochtouren. Die alte Dame kann es noch.' : 'Die alte Dame des Netzes. Läuft und läuft.';

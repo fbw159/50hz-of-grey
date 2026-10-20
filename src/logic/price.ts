@@ -175,3 +175,9 @@ export function kwhPerEuro(eurMwh: number): number | null {
   if (!Number.isFinite(eurMwh) || eurMwh <= 0) return null;
   return 1000 / eurMwh;
 }
+
+/** Extremes of the hours that have not ended yet (all hours if none are left). */
+export function upcomingExtremes(hours: HourPrice[], now: number): PriceExtremes | null {
+  const upcoming = hours.filter((h) => h.end > now);
+  return priceExtremes(upcoming.length ? upcoming : hours);
+}

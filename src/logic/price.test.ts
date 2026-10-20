@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Dataset } from '@/types/data';
 import { startOfBerlinDay } from '@/lib/dateUtils';
-import { dayStats, getPriceOverview, hourlyPrices, kwhPerEuro, priceExtremes, priceRegime } from './price';
+import { dayStats, getPriceOverview, hourlyPrices, kwhPerEuro, priceExtremes, priceRegime, upcomingExtremes } from './price';
 
 const QUARTER = 15 * 60_000;
 
@@ -111,6 +111,18 @@ describe('hourly prices', () => {
     expect(hours).toHaveLength(24); // 25 real hours, first one empty
     expect(hours[0].start).toBe(startOfBerlinDay('2026-10-25') + 3_600_000);
     expect(priceExtremes([])).toBeNull();
+  });
+
+  it('only recommends hours that are still to come', () => {
+    // cheap at night (hour 2), expensive at hour 20, medium otherwise
+    const ds = priceDataset(['2026-10-15'], (_d, i) => (Math.floor(i / 4) === 2 ? 10 : Math.floor(i / 4) === 20 ? 300 : 100 + Math.floor(i / 4)));
+    const hours = hourlyPrices(dayStats(ds, '2026-10-15'));
+    const noon = startOfBerlinDay('2026-10-15') + 12 * 3_600_000 + 60_000;
+    const ex = upcomingExtremes(hours, noon)!;
+    expect(ex.cheapest.start).toBe(startOfBerlinDay('2026-10-15') + 12 * 3_600_000); // the current hour still counts
+    expect(ex.priciest.avg).toBe(300);
+    const late = startOfBerlinDay('2026-10-16') + 1000;
+    expect(upcomingExtremes(hours, late)!.cheapest.avg).toBe(10); // nothing left → whole day
   });
 
   it('converts a price into kWh per euro', () => {
