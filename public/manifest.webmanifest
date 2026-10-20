@@ -1,7 +1,7 @@
 {
   "name": "50 Hz of Grey – Wie geht's dem Stromnetz?",
   "short_name": "50 Hz of Grey",
-  "description": "Echte Netzdaten. Unechte Panik. Frequenz, Börsenstrom und Strommix, erklärt von einer Steckdose mit Gefühlen.",
+  "description": "Echte Daten, viel Spannung. Frequenz, Börsenstrom und Strommix, erklärt von Mr. Grey, einer Steckdose mit Gefühlen.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

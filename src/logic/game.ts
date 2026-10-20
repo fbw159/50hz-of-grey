@@ -32,7 +32,11 @@ export const GAME_EVENTS: GameEvent[] = [
   { id: 'trip', emoji: '🏭', text: 'Ein Kraftwerksblock stolpert und fliegt vom Netz.', gw: 4 },
   { id: 'storm', emoji: '🌬️', text: 'Sturmtief zieht durch. Die Windräder drehen auf.', gw: -3 },
   { id: 'sun', emoji: '☀️', text: 'Die Sonne kommt raus. Die Solaranlagen legen los.', gw: -2 },
-  { id: 'tatort', emoji: '📺', text: 'Tatort ist vorbei. Halb Deutschland geht ins Bett.', gw: -2 },
+  { id: 'tatort', emoji: '📺', text: 'Tatort ist vorbei. Halb Deutschland geht ins Bett. Zum Schlafen. Vermutlich.', gw: -2 },
+  { id: 'valentine', emoji: '🕯️', text: 'Valentinstag: Halb Deutschland dimmt das Licht und zündet Kerzen an.', gw: -2 },
+  { id: 'blanket', emoji: '🛌', text: 'Kuschelabend: Millionen Heizdecken gehen gleichzeitig an.', gw: 2 },
+  { id: 'sauna', emoji: '🧖', text: 'Saunaabend im ganzen Land. Es wird heiß.', gw: 2 },
+  { id: 'sunday', emoji: '☕', text: 'Sonntagmorgen: Alle bleiben länger im Bett, die Kaffeemaschinen auch.', gw: -1 },
   { id: 'ev', emoji: '🚗', text: 'Feierabend: Eine Million E-Autos hängen sich ans Netz.', gw: 2 },
   { id: 'canteen', emoji: '🍝', text: 'Mittagspause. Alle Kantinen heizen gleichzeitig hoch.', gw: 1 },
   { id: 'xmas', emoji: '🎄', text: 'Die Weihnachtsbeleuchtung im ganzen Land geht an.', gw: 2 },
@@ -121,18 +125,18 @@ export interface GameRank {
 export function rankFor(state: GameState): GameRank {
   const calmShare = state.t > 0 ? state.calmSeconds / state.t : 0;
   if (state.status === 'won') {
-    if (calmShare >= 0.8) return { title: 'Legende der Leitwarte', text: 'Fast die ganze Zeit im grünen Bereich. Die Netzbetreiber wollen deine Nummer.' };
-    if (calmShare >= 0.5) return { title: 'Frequenz-Flüsterer', text: 'Durchgehalten und dabei meistens ruhig geblieben. Respekt.' };
-    return { title: 'Netzretter mit Schweißflecken', text: 'Geschafft! Schön war es nicht, aber das Licht blieb an.' };
+    if (calmShare >= 0.8) return { title: 'Meister der Spannung', text: 'Fast die ganze Zeit im grünen Bereich. Mr. Grey ist beeindruckt und ein kleines bisschen verliebt.' };
+    if (calmShare >= 0.5) return { title: 'Frequenz-Flüsterer', text: 'Durchgehalten und meistens ruhig geblieben. Du weißt, wie man mit Spannung umgeht.' };
+    return { title: 'Netzretter mit Schweißperlen', text: 'Geschafft! Elegant war es nicht, aber das Licht blieb an.' };
   }
-  if (state.t < 12) return { title: 'Azubi, erstes Lehrjahr', text: 'Kein Problem, das Netz verzeiht. Meistens.' };
-  if (state.t < 30) return { title: 'Schichtleitung auf Probe', text: 'Gar nicht schlecht. Beim nächsten Mal schneller gegensteuern.' };
-  return { title: 'Beinahe-Held', text: 'So knapp! Noch ein paar Sekunden und du hättest es geschafft.' };
+  if (state.t < 12) return { title: 'Azubi mit Berührungsängsten', text: 'Kein Problem, beim ersten Mal sind alle nervös.' };
+  if (state.t < 30) return { title: 'Schichtleitung mit Herzklopfen', text: 'Nicht schlecht. Beim nächsten Mal etwas schneller gegensteuern.' };
+  return { title: 'Kurz vorm Höhepunkt', text: 'So knapp! Noch ein paar Sekunden und du hättest es geschafft.' };
 }
 
 export function lossText(status: GameStatus): string | null {
-  if (status === 'low') return 'Unter 49,8 Hz: In einer echten Leitwarte würde jetzt das Alarmtelefon klingeln.';
-  if (status === 'high') return 'Über 50,2 Hz: Solaranlagen regeln sich ab hier automatisch herunter. In echt. Hier ist einfach Schluss.';
+  if (status === 'low') return 'Unter 49,8 Hz: zu wenig Leistung. Passiert den Besten. In einer echten Leitwarte würde jetzt das Alarmtelefon klingeln.';
+  if (status === 'high') return 'Über 50,2 Hz: zu viel des Guten. Ab hier ziehen sich Solaranlagen automatisch zurück, das ist in echt so geregelt.';
   return null;
 }
 

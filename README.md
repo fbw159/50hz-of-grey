@@ -1,6 +1,6 @@
 # ⚡ 50 Hz of Grey
 
-**Wie geht's dem deutschen Stromnetz gerade?** Eine Steckdose mit Gefühlen erklärt es dir – mit echten Messwerten und unechter Panik.
+**Wie geht's dem deutschen Stromnetz gerade?** Mr. Grey, eine Steckdose mit Gefühlen, erklärt es dir – mit echten Messwerten und viel Spannung. Satire mit Augenzwinkern, frei nach einem bekannten Roman (nur der Grauton ist geklaut).
 
 👉 **Live:** https://fbw159.github.io/50hz-of-grey/
 
@@ -10,14 +10,15 @@
 
 Eine einzige Seite, gebaut fürs Handy:
 
-- **Die Steckdose** zeigt die Laune des Netzes: tiefenentspannt, entspannt, leicht nervös, am Schwitzen oder in Panik. Antippen erlaubt.
-- **Panik-Index (0–100):** ein Spaß-Index aus drei echten Werten – Abweichung der Frequenz von 50 Hz, Börsenstrompreis und wie wenig Wind und Sonne gerade liefern.
+- **Mr. Grey, die Steckdose,** zeigt die Laune des Netzes: tiefenentspannt, entspannt, leicht erregt, ganz schön heiß oder außer Kontrolle. Antippen erlaubt (er hat Grenzen).
+- **Erregungs-Index (0–100):** ein Spaß-Index aus drei echten Werten – Abweichung der Frequenz von 50 Hz, Börsenstrompreis und wie wenig Wind und Sonne gerade liefern. „Erregung“ heißt bei Generatoren übrigens wirklich so.
 - **Drei Messgeräte:** Netzfrequenz, Börsenstrompreis, Öko-Anteil.
-- **Der Herzschlag des Netzes:** die Frequenz der letzten zehn Minuten als EKG.
-- **Was kostet Strom gerade?** Börsenpreis jetzt, Stundenbalken für heute und morgen und der Waschmaschinen-Tipp (billigste und teuerste Stunde).
-- **Wer liefert gerade den Strom?** Sonne, Wind, Kohle, Gas & Co. mit je einem Spruch.
+- **Der Puls des Netzes:** die Frequenz der letzten zehn Minuten als EKG.
+- **Was kostet der Spaß gerade?** Börsenpreis jetzt, Stundenbalken für heute und morgen und der Schleudergang-Tipp (billigste und teuerste noch kommende Stunde).
+- **Wer bringt das Netz gerade in Fahrt?** Sonne, Wind, Kohle, Gas & Co. mit je einem Spruch.
 - **Spiel „Halt die 50 Hz!“:** 45 Sekunden Leitwarte – Halbzeitpausen, Wolken und Sturmtiefs mit dem Kraftwerk ausgleichen.
-- **Wusstest du?** Kurze, echte Fakten zum Stromnetz.
+- **Steckbrief von Mr. Grey:** sucht Stecker mit Schutzkontakt, Safeword „Lastabwurf“.
+- **Bettgeflüster für Ingenieure:** kurze, echte Fakten zum Stromnetz.
 
 ## Woher die Zahlen kommen
 
@@ -32,7 +33,7 @@ Ehrlichkeitsregeln:
 
 - Jeder Wert zeigt seine Uhrzeit. Erzeugungsdaten kommen bei Energy-Charts ca. 1–2 Stunden verzögert.
 - Fehlen Daten, sagt die Seite das. **Beispieldaten** gibt es nur auf Knopfdruck und dann mit gelb-schwarzem Warnbanner.
-- Die Sprüche sind Satire, die Zahlen nicht. Der Panik-Index ist keine offizielle Kennzahl.
+- Die Sprüche sind Satire, die Zahlen nicht. Der Erregungs-Index ist keine offizielle Kennzahl.
 
 ## Lokal starten
 
@@ -59,7 +60,7 @@ src/
   App.tsx              die Seite
   components/          Steckdose, Messgeräte, Karten, Spiel
   content/texts.ts     alle Sprüche und Fakten an einem Ort
-  logic/               Panik-Index, Preise, Strommix, Frequenz, Spielphysik (alles getestet)
+  logic/               Erregungs-Index (panic.ts), Preise, Strommix, Frequenz, Spielphysik (alles getestet)
   services/            Datenabruf: Snapshot, Cache, Live-API (Dev)
   lib/                 Formatierung, Zeit (Europe/Berlin), Zeitreihen
 scripts/

@@ -3,7 +3,7 @@ import { useGridData, refreshGridData, setDemoMode } from '@/hooks/useGridData';
 import { useNow } from '@/hooks/useNow';
 import { showToast } from '@/hooks/useToast';
 import { buildView, type GridView } from '@/logic/view';
-import { MOODS } from '@/content/texts';
+import { INDEX_NAME, MOODS } from '@/content/texts';
 import { berlinDayKey, formatBerlinTime } from '@/lib/dateUtils';
 import { eurPerMwhToCtPerKwh, formatNumber } from '@/lib/formatters';
 import { appUrl } from '@/lib/clipboard';
@@ -16,6 +16,7 @@ import { PriceCard } from '@/components/PriceCard';
 import { MixCard } from '@/components/MixCard';
 import { GameCard } from '@/components/GameCard';
 import { FactCard } from '@/components/FactCard';
+import { ProfileCard } from '@/components/ProfileCard';
 import { Footer } from '@/components/Footer';
 import { Toast } from '@/components/Toast';
 
@@ -26,7 +27,7 @@ function shareSummary(view: GridView): string {
   if (view.frequency) parts.push(`${formatNumber(view.frequency.value, 3)} Hz`);
   if (view.price?.current) parts.push(`Börsenstrom ${formatNumber(eurPerMwhToCtPerKwh(view.price.current.value), 1)} ct/kWh`);
   if (view.generation?.renewableShareOfLoad != null) parts.push(`${formatNumber(view.generation.renewableShareOfLoad, 0)} % Öko-Strom`);
-  const head = view.panic ? `Das Stromnetz ist gerade ${MOODS[view.panic.mood].verdict} (Panik-Index ${view.panic.score} von 100).` : 'Wie geht es dem Stromnetz gerade?';
+  const head = view.panic ? `Das Stromnetz ist gerade ${MOODS[view.panic.mood].verdict} (${INDEX_NAME} ${view.panic.score} von 100).` : 'Wie erregt ist das Stromnetz gerade?';
   return parts.length ? `${head} ${parts.join(', ')}.` : head;
 }
 
@@ -39,7 +40,7 @@ export default function App() {
 
   const onShare = async () => {
     const result = await shareText('50 Hz of Grey', shareSummary(view), appUrl());
-    if (result === 'copied') showToast('Link kopiert. Ab damit in den Familienchat.');
+    if (result === 'copied') showToast('Link kopiert. Teile die Spannung.');
     if (result === 'failed') showToast('Teilen hat nicht geklappt.');
   };
 
@@ -48,7 +49,7 @@ export default function App() {
       {demo && (
         <div className="hazard sticky top-0 z-40 p-1.5" data-testid="demo-banner">
           <div className="mx-auto flex max-w-[34rem] items-center justify-between gap-3 rounded-lg bg-[#1f1a0a] px-3 py-2 text-[0.9rem] text-[#fbe7a8]">
-            <span className="font-semibold">Beispieldaten, nicht echt!</span>
+            <span className="font-semibold">Beispieldaten. Alles nur gespielt!</span>
             <button type="button" className="underline" onClick={() => setDemoMode(false)} data-testid="demo-off">
               Echte Daten laden
             </button>
@@ -69,6 +70,7 @@ export default function App() {
           <PriceCard view={view} now={now} slot={slot} />
           <MixCard view={view} />
           <GameCard />
+          <ProfileCard />
           <FactCard dayKey={berlinDayKey(now)} />
         </main>
         <Footer />

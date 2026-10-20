@@ -13,8 +13,8 @@ export function Footer() {
         vom Fraunhofer ISE, Lizenz CC BY 4.0. Die Seite holt sich die Werte regelmäßig neu, etwa alle 30 bis 45 Minuten.
       </p>
       <p>
-        <strong className="text-ink">Achtung, Satire:</strong> Die Zahlen sind echt, die Sprüche nicht ernst gemeint. Der Panik-Index ist eine Spaß-Kennzahl und keine
-        offizielle Netzinformation.
+        <strong className="text-ink">Achtung, Satire:</strong> Die Zahlen sind echt, die Anzüglichkeiten nicht ernst gemeint. Der Erregungs-Index ist eine Spaß-Kennzahl
+        und keine offizielle Netzinformation. Mit dem bekannten Roman teilen wir nur den Grauton.
       </p>
       <p>
         <strong className="text-ink">Datenschutz:</strong> Keine Cookies, kein Tracking, keine externen Schriften. Dein Spielrekord bleibt nur in deinem Browser.

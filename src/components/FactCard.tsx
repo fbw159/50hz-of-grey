@@ -8,14 +8,14 @@ export function FactCard({ dayKey }: { dayKey: string }) {
   return (
     <section className="panel p-4" aria-labelledby="fact-title" data-testid="fact-card">
       <h2 id="fact-title" className="section-title">
-        Wusstest du?
+        Bettgeflüster für Ingenieure
       </h2>
       <p className="mt-2 min-h-[4.4rem] text-[1.05rem]" aria-live="polite" data-testid="fact-text">
         {FACTS[index]}
       </p>
       <div className="mt-3 flex items-center justify-between gap-3">
         <button type="button" className="btn" onClick={() => setIndex((i) => (i + 1) % FACTS.length)} data-testid="fact-next">
-          Noch ein Fakt
+          Weiterflüstern
         </button>
         <span className="fine">
           {index + 1} von {FACTS.length}

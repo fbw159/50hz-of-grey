@@ -9,7 +9,7 @@ test.describe('with real data (snapshot)', () => {
   test('shows the socket, meters and all sections without errors or sideways scrolling', async ({ page }) => {
     const watcher = watchConsole(page);
     await page.goto('./');
-    await expect(page.getByTestId('verdict')).not.toHaveText(/wird gemessen|nicht erreichbar/);
+    await expect(page.getByTestId('verdict')).not.toHaveText(/wärmt sich auf|nicht in Stimmung/);
     await expect(page.getByTestId('panic-score')).toContainText('von 100');
     await expect(page.getByTestId('meter-frequency')).toHaveAttribute('aria-label', /Netzfrequenz: (49|50),\d{3} Hertz/);
     await expect(page.getByTestId('meter-price')).toHaveAttribute('aria-label', /Cent pro Kilowattstunde/);
@@ -18,9 +18,10 @@ test.describe('with real data (snapshot)', () => {
     await expect(page.getByTestId('demo-banner')).toHaveCount(0);
     await expect(page.getByTestId('frequency-value')).toContainText(/\d{2},\d{3}/);
     await expect(page.getByTestId('price-value')).toBeVisible();
-    await expect(page.getByTestId('price-tip')).toContainText('Waschmaschinen-Tipp');
+    await expect(page.getByTestId('price-tip')).toContainText('Schleudergang-Tipp');
+    await expect(page.getByTestId('profile-card')).toContainText('Lastabwurf');
     await expect(page.getByTestId('share-value')).toContainText('64 %');
-    await expect(page.getByTestId('trade')).toContainText('verkauft');
+    await expect(page.getByTestId('trade')).toContainText('ans Ausland ab');
     await expect(page.getByTestId('game-card')).toBeVisible();
     await expect(page.getByTestId('fact-text')).not.toBeEmpty();
     expect(await hasHorizontalOverflow(page)).toBe(false);
@@ -66,7 +67,7 @@ test.describe('without data', () => {
   test('explains the problem and shows example data only on request', async ({ page }) => {
     // the repository ships an empty placeholder snapshot
     await page.goto('./');
-    await expect(page.getByTestId('verdict')).toHaveText('nicht erreichbar');
+    await expect(page.getByTestId('verdict')).toHaveText('nicht in Stimmung');
     await expect(page.getByTestId('demo-banner')).toHaveCount(0);
     await page.getByTestId('demo-on').click();
     await expect(page.getByTestId('demo-banner')).toBeVisible();
@@ -74,6 +75,6 @@ test.describe('without data', () => {
     await expect(page.getByTestId('ekg-card')).toBeVisible();
     await page.getByTestId('demo-off').click();
     await expect(page.getByTestId('demo-banner')).toHaveCount(0);
-    await expect(page.getByTestId('verdict')).toHaveText('nicht erreichbar');
+    await expect(page.getByTestId('verdict')).toHaveText('nicht in Stimmung');
   });
 });

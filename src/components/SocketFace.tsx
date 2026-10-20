@@ -22,7 +22,7 @@ export function SocketFace({ mood, poked = false, size = 200 }: Props) {
       height={size}
       viewBox="0 0 200 200"
       role="img"
-      aria-label={`Steckdose, Stimmung: ${MOOD_LABEL[mood]}`}
+      aria-label={`Mr. Grey, die Steckdose, Stimmung: ${MOOD_LABEL[mood]}`}
     >
       <defs>
         <linearGradient id="sf-plate" x1="0" y1="0" x2="0" y2="1">
@@ -50,9 +50,9 @@ export function SocketFace({ mood, poked = false, size = 200 }: Props) {
       <rect x="86" y="36" width="28" height="11" rx="3" fill="url(#sf-metal)" stroke="#7d8287" strokeWidth="0.8" />
       <rect x="86" y="153" width="28" height="11" rx="3" fill="url(#sf-metal)" stroke="#7d8287" strokeWidth="0.8" />
 
-      {/* cheeks */}
-      {(mood === 'zen' || mood === 'chill') && (
-        <g fill="#e9928a" opacity="0.35">
+      {/* cheeks – the more excited, the redder */}
+      {mood !== 'dead' && mood !== 'loading' && (
+        <g fill="#e9928a" opacity={BLUSH[mood]}>
           <ellipse cx="57" cy="121" rx="10" ry="6" />
           <ellipse cx="143" cy="121" rx="10" ry="6" />
         </g>
@@ -128,9 +128,11 @@ export function SocketFace({ mood, poked = false, size = 200 }: Props) {
 const MOOD_LABEL: Record<FaceMood, string> = {
   zen: 'tiefenentspannt',
   chill: 'entspannt',
-  nervous: 'nervös',
-  sweaty: 'schwitzt',
-  panic: 'Panik',
+  nervous: 'leicht erregt',
+  sweaty: 'ganz schön heiß',
+  panic: 'außer Kontrolle',
   loading: 'wartet auf Daten',
   dead: 'keine Daten',
 };
+
+const BLUSH: Record<Mood, number> = { zen: 0.3, chill: 0.35, nervous: 0.55, sweaty: 0.7, panic: 0.85 };

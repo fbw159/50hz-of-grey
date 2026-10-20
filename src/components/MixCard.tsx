@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { GridView } from '@/logic/view';
-import { SOURCES, sourceCaption } from '@/content/texts';
+import { SOURCES, sourceCaption, tradeText } from '@/content/texts';
 import { formatBerlinTime, zonedParts } from '@/lib/dateUtils';
 import { formatNumber } from '@/lib/formatters';
 
@@ -22,7 +22,7 @@ export function MixCard({ view }: { view: GridView }) {
   return (
     <section id="mix" className="panel scroll-mt-4 p-4" aria-labelledby="mix-title" data-testid="mix-card">
       <h2 id="mix-title" className="section-title">
-        Wer liefert gerade den Strom?
+        Wer bringt das Netz gerade in Fahrt?
       </h2>
 
       {share !== null && (
@@ -73,9 +73,7 @@ export function MixCard({ view }: { view: GridView }) {
       {trade !== null && Math.abs(trade) >= 100 && (
         <p className="mt-2 rounded-xl bg-panel-hi p-3 text-[0.95rem]" data-testid="trade">
           <span aria-hidden="true">{trade > 0 ? '📥 ' : '📤 '}</span>
-          {trade > 0
-            ? `Deutschland kauft gerade ${formatNumber(trade / 1000, 1)} GW im Ausland ein. Ganz normal im europäischen Strommarkt.`
-            : `Deutschland verkauft gerade ${formatNumber(-trade / 1000, 1)} GW ins Ausland. Die Nachbarn sagen danke.`}
+          {tradeText(trade, `${formatNumber(Math.abs(trade) / 1000, 1)} GW`)}
         </p>
       )}
       <p className="fine mt-3">Öffentliche Nettostromerzeugung in Deutschland, Daten von Energy-Charts (Fraunhofer ISE). Anteile in Klammern: an der Erzeugung.</p>

@@ -1,7 +1,8 @@
 /**
  * All jokes in one place. The numbers next to them are always real; the
- * jokes are clearly jokes. Lines are picked deterministically per time slot,
- * so everybody sees the same joke at the same time (and it doesn't flicker).
+ * jokes are clearly jokes (cheeky, never explicit). Lines are picked
+ * deterministically per time slot, so everybody sees the same joke at the
+ * same time (and it doesn't flicker).
  */
 import type { Mood } from '@/logic/panic';
 import type { GenerationCategoryId } from '@/logic/mix';
@@ -10,6 +11,12 @@ import { hashString } from '@/lib/timeseries';
 export function pick<T>(list: T[], seed: string): T {
   return list[hashString(seed) % list.length];
 }
+
+/** The socket's name. */
+export const SOCKET_NAME = 'Mr. Grey';
+
+/** Name of the 0–100 fun index. */
+export const INDEX_NAME = 'Erregungs-Index';
 
 export interface MoodText {
   /** Short verdict shown big under the socket. */
@@ -21,74 +28,88 @@ export const MOODS: Record<Mood, MoodText> = {
   zen: {
     verdict: 'tiefenentspannt',
     lines: [
-      '50 Hz wie gemalt. In der Leitwarte wird Skat gespielt.',
-      'So ruhig war es zuletzt beim Testbild.',
-      'Alles im grünen Bereich. Sogar der Kaffee ist noch warm.',
-      'Das Netz macht gerade Yoga. Bitte nicht stören.',
+      '50 Hz wie gemalt. Mr. Grey liegt im Bademantel auf dem Sofa.',
+      'Wechselstrom eben: rein, raus, 50-mal pro Sekunde. Völlig entspannt.',
+      'Kein Zittern, kein Stöhnen. Nur pure Harmonie im Netz.',
+      'So ruhig, dass in der Leitwarte schon Kerzen angezündet werden.',
     ],
   },
   chill: {
     verdict: 'entspannt',
     lines: [
+      'Ein leichtes Kribbeln. Ganz normal bei 230 Volt.',
       'Ein bisschen Wackeln gehört dazu. Wie in jeder guten Beziehung.',
-      'Läuft. Nicht perfekt, aber wer ist das schon.',
-      'Die Leitwarte hat die Füße hochgelegt. Nur ein bisschen.',
       'Normalbetrieb. Langweilig für uns, gut für alle anderen.',
+      'Die Spannung ist da, aber niemand übertreibt.',
     ],
   },
   nervous: {
-    verdict: 'leicht nervös',
+    verdict: 'leicht erregt',
     lines: [
-      'Irgendwer hat gerade sehr viele Wasserkocher gleichzeitig eingeschaltet.',
-      'Die Leitwarte trommelt mit den Fingern auf dem Tisch.',
-      'Noch kein Grund zur Sorge. Aber der zweite Kaffee ist schon aufgesetzt.',
-      'Das Netz schaut kurz besorgt auf die Wetterkarte.',
+      'Die Generatoren erhöhen die Erregung. Rein technisch, versteht sich.',
+      'Die Spannung steigt. Irgendwer hat sehr viele Wasserkocher gleichzeitig angemacht.',
+      'Mr. Grey wird unruhig und zupft an seiner Krawatte.',
+      'Noch alles im Rahmen. Aber es knistert.',
     ],
   },
   sweaty: {
-    verdict: 'am Schwitzen',
+    verdict: 'ganz schön heiß',
     lines: [
-      'Teurer Strom, wenig Wind, viel Bedarf. Die Leitwarte lockert die Krawatte.',
+      'Teurer Strom, wenig Wind, viel Bedarf. Hier wird es heiß unter dem Schutzkontakt.',
+      'Die Leitwarte lockert die Krawatte. Und nicht nur die.',
       'Jetzt bitte nicht alle gleichzeitig die Sauna anwerfen.',
-      'Im Kraftwerk wird gerade jeder Knopf gedrückt, der grün leuchtet.',
-      'Das Netz schwitzt. Zum Glück ist es wasserdicht. Hoffentlich.',
+      'Es wird schwitzig. Die Regelkraftwerke geben alles.',
     ],
   },
   panic: {
-    verdict: 'in Panik',
+    verdict: 'außer Kontrolle',
     lines: [
-      'Alle Mann an die Regler! (Keine Sorge: Echte Netzbetreiber bleiben ruhiger als diese Steckdose.)',
-      'Hier blinkt alles rot. Die Steckdose übertreibt aber gern.',
-      'Großalarm in der Leitwarte. Die Kaffeemaschine wurde vorsorglich abgeschaltet.',
+      'Safeword! Safeword! (Es lautet übrigens „Lastabwurf“.)',
+      'Zu viel Spannung. Selbst Mr. Grey braucht jetzt eine kalte Dusche.',
+      'Hier blinkt alles rot. Keine Sorge: Echte Netzbetreiber bleiben cooler als diese Steckdose.',
     ],
   },
 };
 
-export const LOADING_TEXT = { verdict: 'wird gemessen', line: 'Moment, ich halte kurz den Finger rein. Nur Spaß, niemals nachmachen!' };
+export const LOADING_TEXT = { verdict: 'wärmt sich auf', line: 'Moment, Mr. Grey macht sich noch frisch. Die Daten kommen gleich.' };
 export const ERROR_TEXT = {
-  verdict: 'nicht erreichbar',
+  verdict: 'nicht in Stimmung',
   line: 'Die Datenquelle antwortet gerade nicht. Versuch es gleich nochmal oder schau dir Beispieldaten an.',
 };
 
 /** What the socket says when you poke it. */
 export const SOCKET_POKES = [
+  'Nicht so stürmisch! Wir kennen uns doch kaum.',
   'Finger weg, ich stehe unter Spannung!',
-  'Aua. 230 Volt sind kein Spielzeug.',
-  'Ich bin eine Steckdose, kein Knopf.',
-  'Hihi, das kitzelt in der Phase.',
+  'Ich habe einen Schutzkontakt. Und klare Grenzen.',
+  'Hey! Ich bin nicht so eine Steckdose.',
+  'Zwei Löcher, 230 Volt, sucht passenden Stecker. Schuko bevorzugt.',
+  'Unser Safeword ist „Lastabwurf“. Merk dir das.',
   'Noch einmal und ich löse den FI aus.',
-  'Schuko heißt Schutzkontakt. Also bitte: Kontakt mit Schutz.',
-  'Steck lieber was Sinnvolles ein. Den Wasserkocher zum Beispiel.',
-  'Ich habe zwei Löcher und trotzdem den Durchblick.',
+  'Du willst Spannung? Ich hab 230 Volt.',
+  'Nur mit trockenen Händen, bitte. Ich bin da empfindlich.',
+  'Hihi, das kitzelt in der Phase.',
+];
+
+/** Dating profile of the socket ("Steckbrief" – a pun in German). */
+export const PROFILE: { label: string; value: string }[] = [
+  { label: 'Typ', value: 'Schuko-Steckdose, Unterputz, gut geerdet' },
+  { label: 'Herkunft', value: 'Bayern, Familie seit den 1920ern im Geschäft' },
+  { label: 'Spannung', value: '230 Volt. Immer.' },
+  { label: 'Takt', value: '50 Hz, sehr regelmäßig, große Ausdauer' },
+  { label: 'Sucht', value: 'Stecker mit Schutzkontakt für eine feste Verbindung' },
+  { label: 'Mag', value: 'Erdung, Gleichmäßigkeit, Kerzenschein zur Lastspitze' },
+  { label: 'Mag nicht', value: 'Kurzschlüsse, nasse Finger, Mehrfachstecker hintereinander' },
+  { label: 'Safeword', value: 'Lastabwurf' },
 ];
 
 /* -------------------------------- Frequency ------------------------------- */
 
 export const FREQUENCY_LINES: Record<Mood, string[]> = {
-  zen: ['Ruhepuls. Das Netz schläft fast ein.', 'Ein Puls wie ein Mönch.'],
-  chill: ['Normaler Puls. Ganz Europa tanzt im Takt.', 'Leichtes Zittern, völlig normal.'],
-  nervous: ['Der Puls geht hoch. Irgendwo fehlt gerade Leistung oder ist zu viel da.', 'Ein kleiner Ausreißer. Die Regelreserve arbeitet schon.'],
-  sweaty: ['Deutliche Abweichung. Die Regelkraftwerke legen sich ins Zeug.', 'Das ist selten. Die Leitwarten in Europa schauen jetzt genauer hin.'],
+  zen: ['Ruhepuls. Er ist völlig entspannt.', 'Puls wie nach einer Massage.'],
+  chill: ['Leichtes Zittern. Er mag das.', 'Ganz Europa bewegt sich im selben Takt. Romantisch, oder?'],
+  nervous: ['Der Puls geht hoch. Irgendwo fehlt gerade Leistung oder es ist zu viel da.', 'Ein kleiner Ausreißer. Die Regelreserve greift schon beherzt zu.'],
+  sweaty: ['Deutliche Abweichung. Jetzt wird geschwitzt, auch in den Regelkraftwerken.', 'Das ist selten. Die Leitwarten in Europa schauen jetzt ganz genau hin.'],
   panic: ['Sehr große Abweichung! So etwas kommt nur alle paar Jahre vor.'],
 };
 
@@ -108,25 +129,28 @@ export const PRICE_TEXT: Record<PriceMood, { tag: string; lines: string[] }> = {
   negative: {
     tag: 'Geld zurück!',
     lines: [
-      'Negativer Preis: Wer jetzt Strom abnimmt, bekommt an der Börse Geld dafür. Die Waschmaschine ist offiziell ein Geschäftsmodell.',
-      'Zu viel Strom, zu wenig Abnehmer. Die Börse zahlt fürs Verbrauchen. Verrückte Welt.',
+      'Negativer Preis: Man wird fürs Abnehmen bezahlt. Klingt unanständig, ist aber Strombörse.',
+      'Ein unmoralisches Angebot: Die Börse zahlt dir Geld, wenn du ihr den Strom abnimmst.',
     ],
   },
   cheap: {
     tag: 'Spottbillig',
-    lines: ['Schnäppchen-Alarm an der Börse. Jetzt wäre ein guter Moment für die Waschmaschine.', 'Billig wie lange nicht. Sonne oder Wind haben gute Laune.'],
+    lines: ['Schnäppchen! Wind und Sonne sind heute sehr großzügig.', 'So günstig, dass die Waschmaschine schon ungeduldig mit der Trommel wackelt.'],
   },
   normal: {
     tag: 'Ganz normal',
-    lines: ['Ein ganz normaler Börsenpreis. Nichts zu sehen, bitte weitergehen.', 'Durchschnitt. Die Börse gähnt.'],
+    lines: ['Ein ganz normaler Preis. Kein Grund, rot zu werden.', 'Durchschnitt. Die Börse liegt entspannt in der Löffelchenstellung.'],
   },
   pricey: {
     tag: 'Teuer',
-    lines: ['Teure Stunden. Meist laufen dann viele Gaskraftwerke.', 'Die Börse zieht die Preise an. Licht aus, wo es nicht gebraucht wird.'],
+    lines: ['Teuer. Für diesen Preis erwartet man eigentlich mehr als nur Strom.', 'Die Börse spielt die Unnahbare. Meist laufen dann viele Gaskraftwerke.'],
   },
   ouch: {
     tag: 'Autsch',
-    lines: ['Richtig teuer gerade. Die Kraftwerke mit den höchsten Kosten bestimmen jetzt den Preis.', 'Autsch. Wer jetzt Strom an der Börse kauft, braucht starke Nerven.'],
+    lines: [
+      'Autsch. Das ist kein Spaß mehr, das ist Schmerz. Und zwar nicht die angenehme Sorte.',
+      'Richtig teuer. Jetzt bestimmen die Kraftwerke mit den höchsten Kosten den Preis.',
+    ],
   },
 };
 
@@ -151,45 +175,52 @@ export const SOURCES: Record<GenerationCategoryId, SourceInfo> = {
   other: { label: 'Müll, Öl & Co.', emoji: '🗑️', color: '#9AA09B' },
 };
 
-/** One witty caption per source, depending on what it is doing right now. */
+/** One cheeky caption per source, depending on what it is doing right now. */
 export function sourceCaption(id: GenerationCategoryId, mw: number, utilisation: number | null, isNight: boolean): string {
   const gw = mw / 1000;
   switch (id) {
     case 'solar':
-      if (gw < 0.05) return isNight ? 'Schläft. Es ist dunkel, das ist normal.' : 'Hat sich hinter Wolken versteckt.';
-      if (utilisation !== null && utilisation < 0.1) return 'Blinzelt nur kurz raus.';
-      if (utilisation !== null && utilisation < 0.3) return 'Arbeitet ordentlich.';
-      return 'Gibt Vollgas. Sonnencreme nicht vergessen.';
+      if (gw < 0.05) return isNight ? 'Schläft. Mit Augenmaske, es ist ja dunkel.' : 'Versteckt sich schüchtern hinter Wolken.';
+      if (utilisation !== null && utilisation < 0.1) return 'Zeigt sich nur kurz. Ziert sich ein bisschen.';
+      if (utilisation !== null && utilisation < 0.3) return 'Wärmt ordentlich auf.';
+      return 'Gibt alles. Sonnencreme nicht vergessen, es wird heiß.';
     case 'windOnshore':
     case 'windOffshore':
-      if (utilisation !== null && utilisation < 0.1) return 'Flaute. Die Windräder machen Pause.';
-      if (utilisation !== null && utilisation < 0.3) return 'Weht so mittel.';
+      if (utilisation !== null && utilisation < 0.1) return 'Flaute. Heute nur heiße Luft.';
+      if (utilisation !== null && utilisation < 0.3) return 'Bläst so mittel.';
       if (utilisation !== null && utilisation < 0.65) return 'Bläst ordentlich.';
-      return 'Sturm! Die Windräder drehen voll auf.';
+      return 'Sturm! Die Rotoren drehen völlig durch.';
     case 'lignite':
-      return gw > 12 ? 'Läuft auf Hochtouren. Die alte Dame kann es noch.' : 'Die alte Dame des Netzes. Läuft und läuft.';
+      return gw > 12 ? 'Läuft auf Hochtouren. Braun, ausdauernd, ein bisschen schmutzig.' : 'Die alte Dame des Netzes. Verlässlich und ein bisschen schmutzig.';
     case 'hardCoal':
-      return gw < 3 ? 'Fast im Ruhestand. Kommt nur noch aushelfen.' : 'Hilft gerade kräftig mit.';
+      return gw < 3 ? 'Kommt nur noch selten. Aber wenn, dann richtig.' : 'Heizt kräftig mit.';
     case 'gas':
-      return gw > 10 ? 'Springt ein, wenn es eng wird. Und es ist eng.' : 'Steht bereit, wenn es eng wird.';
+      return gw > 10 ? 'Gibt Gas, denn es wird eng.' : 'Gibt Gas, wenn es eng wird.';
     case 'biomass':
-      return 'Läuft gleichmäßig. Wie ein sehr fleißiger Komposthaufen.';
+      return 'Bio, gleichmäßig, ausdauernd. Der Langstreckenläufer im Mix.';
     case 'hydro':
-      return 'Plätschert gemütlich vor sich hin.';
+      return 'Plätschert gemütlich vor sich hin. Wasserspiele inklusive.';
     case 'pumpedStorage':
-      return gw > 2 ? 'Lässt Wasser bergab rauschen und macht Strom draus.' : 'Hält Wasser in Reserve.';
+      return gw > 2 ? 'Lässt das Wasser bergab rauschen und macht Strom draus.' : 'Hält sich zurück und spart es sich für später auf.';
     case 'other':
-      return 'Müllverbrennung, Öl, Grubengas und der Rest.';
+      return 'Müll, Öl und Grubengas. Die Schmuddelecke des Strommixes.';
   }
+}
+
+export function tradeText(netImportMw: number, gwText: string): string {
+  return netImportMw > 0
+    ? `Deutschland holt sich gerade ${gwText} aus dem Ausland. Offene Beziehung, ganz normal in Europa.`
+    : `Deutschland gibt gerade ${gwText} ans Ausland ab. Teilen ist sexy.`;
 }
 
 /* ---------------------------------- Facts --------------------------------- */
 
 export const FACTS: string[] = [
   '50 Hz heißt: Die Spannung schwingt 50-mal pro Sekunde hin und her. Der Strom wechselt also 100-mal pro Sekunde die Richtung.',
-  'Von Portugal bis in die Türkei hängen über 20 Länder am selben Takt. Wenn die Frequenz in Freiburg wackelt, wackelt sie auch in Lissabon.',
-  'Fällt die Frequenz auf 49,0 Hz, werden automatisch Verbraucher abgeschaltet. Das nennt sich Lastabwurf und soll den Rest retten.',
+  'Von Portugal bis in die Türkei hängen über 20 Länder am selben Takt. Wenn die Frequenz in Freiburg zittert, zittert sie auch in Lissabon.',
+  'Fällt die Frequenz auf 49,0 Hz, werden automatisch Verbraucher abgeschaltet. Das nennt sich Lastabwurf und ist das Safeword des Stromnetzes.',
   'Bei 200 mHz Abweichung arbeitet die gesamte Primärregelleistung Europas: rund 3.000 Megawatt, verteilt auf viele Kraftwerke und Batterien.',
+  'Erregung ist ein echter Fachbegriff: Der Erregerstrom erzeugt das Magnetfeld im Generator. Mehr Erregung, mehr Blindleistung. Kein Witz.',
   '2018 gingen in Europa Uhren in Backöfen und Radioweckern bis zu sechs Minuten nach. Grund: Die Frequenz war wochenlang ein kleines bisschen zu niedrig.',
   'Die verlorenen Minuten wurden danach zurückgeholt: Die Netzbetreiber ließen die Frequenz eine Zeit lang leicht über 50 Hz laufen.',
   'Am 8. Januar 2021 ist das europäische Netz kurz in zwei Teile zerfallen. Im Nordwesten sank die Frequenz auf 49,74 Hz. Gemerkt hat das kaum jemand.',
@@ -202,4 +233,5 @@ export const FACTS: string[] = [
   'Dunkelflaute heißt: kaum Wind und kaum Sonne, oft mehrere Tage im Winter. Dann liefern Kohle, Gas, Biomasse und Importe.',
   'Wenn die Leitungen von Nord nach Süd voll sind, wird im Norden Wind abgeregelt und im Süden ein Kraftwerk hochgefahren. Das heißt Redispatch und kostet Milliarden.',
   'Die Netzfrequenz hier wird in Freiburg gemessen, beim Fraunhofer ISE. Sie ist im ganzen europäischen Verbundnetz praktisch gleich.',
+  'Der Grauton dieser Seite ist RAL 7035 Lichtgrau, die Farbe vieler Schaltschränke. Das klassische RAL-Register kennt 38 Grautöne. Fünfzig wären uns lieber gewesen.',
 ];

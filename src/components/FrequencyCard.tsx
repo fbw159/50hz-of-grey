@@ -37,9 +37,9 @@ export function FrequencyCard({ view, slot }: { view: GridView; slot: string }) 
   return (
     <section id="ekg" className="panel scroll-mt-4 p-4" aria-labelledby="ekg-title" data-testid="ekg-card">
       <h2 id="ekg-title" className="section-title">
-        Der Herzschlag des Netzes
+        Der Puls des Netzes
       </h2>
-      <p className="mt-1 text-ink-2">Soll sind genau 50 Hertz. Zwischen 49,95 und 50,05 Hz ist Alltag.</p>
+      <p className="mt-1 text-ink-2">Soll sind genau 50 Hertz. Zwischen 49,95 und 50,05 Hz ist Alltag, darüber hinaus wird es aufregend.</p>
 
       <div className="mt-3 flex items-end justify-between gap-3">
         <p className="font-cond leading-none">
@@ -68,7 +68,7 @@ export function FrequencyCard({ view, slot }: { view: GridView; slot: string }) 
       <dl className="mt-3 grid grid-cols-2 gap-2 text-[0.9rem]">
         <div className="rounded-xl bg-panel-hi p-2.5">
           <dt className="text-ink-2">Puls</dt>
-          <dd className="font-semibold">3.000 Schläge pro Minute. Kerngesund.</dd>
+          <dd className="font-semibold">3.000 Schläge pro Minute. Ausdauer hat er.</dd>
         </div>
         <div className="rounded-xl bg-panel-hi p-2.5">
           <dt className="text-ink-2">Letzte Stunde</dt>

@@ -104,7 +104,7 @@ export function PriceCard({ view, now, slot }: { view: GridView; now: number; sl
   return (
     <section id="preis" className="panel scroll-mt-4 p-4" aria-labelledby="price-title" data-testid="price-card">
       <h2 id="price-title" className="section-title">
-        Was kostet Strom gerade?
+        Was kostet der Spaß gerade?
       </h2>
 
       {current && mood && (
@@ -170,13 +170,13 @@ export function PriceCard({ view, now, slot }: { view: GridView; now: number; sl
             <div className="mt-3 rounded-xl border border-dashed border-line p-3 text-[0.95rem]" data-testid="price-tip">
               <p>
                 <span aria-hidden="true">🧺 </span>
-                <strong>Waschmaschinen-Tipp:</strong> Am günstigsten {isTomorrow ? 'morgen' : 'wird es heute noch'} {when(extremes.cheapest)} mit{' '}
+                <strong>Schleudergang-Tipp:</strong> Am günstigsten {isTomorrow ? 'morgen' : 'wird es heute noch'} {when(extremes.cheapest)} mit{' '}
                 {formatPrice(extremes.cheapest.avg)}.
               </p>
               <p className="mt-1">
                 <span aria-hidden="true">🕯️ </span>
                 Am teuersten {isTomorrow ? '' : 'noch '}
-                {when(extremes.priciest)} mit {formatPrice(extremes.priciest.avg)}. Perfekt für ein Candle-Light-Dinner.
+                {when(extremes.priciest)} mit {formatPrice(extremes.priciest.avg)}. Perfekt für ein Candle-Light-Dinner, Kerzen brauchen keinen Strom.
               </p>
             </div>
           )}

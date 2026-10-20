@@ -59,7 +59,7 @@ async function ogHtml() {
     .tag{display:inline-block;margin-top:34px;background:#f2a900;border:2px solid #9c6d00;border-radius:16px;padding:10px 22px;font-size:34px;color:#1f1a0a}
   </style></head><body>
     <svg width="360" height="360" viewBox="0 0 200 200">${SOCKET}</svg>
-    <div><h1>50 Hz of Grey</h1><p>Wie geht's dem Stromnetz gerade?</p><span class="tag">Echte Netzdaten. Unechte Panik.</span></div>
+    <div><h1>50 Hz of Grey</h1><p>Wie geht's dem Stromnetz gerade?</p><span class="tag">Echte Daten, viel Spannung.</span></div>
   </body></html>`;
 }
 

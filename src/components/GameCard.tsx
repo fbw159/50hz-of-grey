@@ -87,10 +87,10 @@ export function GameCard() {
     const rank = rankFor(g);
     const text =
       g.status === 'won'
-        ? `Ich habe das deutsche Stromnetz ${GAME_DURATION_S} Sekunden lang bei 50 Hz gehalten. Titel: ${rank.title}. Schaffst du das auch?`
-        : `Ich habe das Stromnetz ${Math.floor(g.t)} Sekunden lang gerettet. Titel: ${rank.title}. Kannst du das besser?`;
+        ? `Ich habe das Stromnetz ${GAME_DURATION_S} Sekunden lang bei 50 Hz gehalten, ohne die Kontrolle zu verlieren. Titel: ${rank.title}. Hältst du die Spannung auch so lange?`
+        : `Ich habe das Stromnetz ${Math.floor(g.t)} Sekunden lang bei Laune gehalten. Titel: ${rank.title}. Kannst du das länger?`;
     const r = await shareText('Halt die 50 Hz!', text, `${appUrl()}#spiel`);
-    if (r === 'copied') showToast('Ergebnis kopiert. Jetzt einfügen und angeben.');
+    if (r === 'copied') showToast('Ergebnis kopiert. Jetzt einfügen und ein bisschen angeben.');
     if (r === 'failed') showToast('Teilen hat nicht geklappt.');
   };
 
@@ -103,8 +103,8 @@ export function GameCard() {
       {!game && (
         <>
           <p className="mt-2 text-[1.05rem]">
-            Jetzt bist du die Leitwarte. Halbzeitpausen, Wolken und Sturmtiefs bringen das Netz ins Wanken. Gleiche mit deinem Kraftwerk aus und halte{' '}
-            {GAME_DURATION_S} Sekunden durch.
+            Jetzt hast du die Kontrolle. Mr. Grey mag das. Halbzeitpausen, Kuschelabende und Sturmtiefs bringen das Netz aus dem Takt. Gleiche mit deinem
+            Kraftwerk aus und halte {GAME_DURATION_S} Sekunden durch.
           </p>
           <ul className="mt-3 space-y-1 text-[0.95rem]">
             <li>

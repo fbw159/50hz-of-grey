@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { SocketFace, type FaceMood } from './SocketFace';
 import type { GridView } from '@/logic/view';
-import { ERROR_TEXT, LOADING_TEXT, MOODS, SOCKET_POKES, pick } from '@/content/texts';
+import { ERROR_TEXT, INDEX_NAME, LOADING_TEXT, MOODS, SOCKET_NAME, SOCKET_POKES, pick } from '@/content/texts';
 import { formatBerlinTime } from '@/lib/dateUtils';
 
 interface Props {
@@ -47,9 +47,12 @@ export function Hero({ view, status, slot, onRetry, onDemo }: Props) {
             </p>
           )}
         </div>
-        <button type="button" onClick={onPoke} className="mx-auto mt-6 block rounded-[2.2rem]" aria-label="Steckdose anstupsen" data-testid="socket">
+        <button type="button" onClick={onPoke} className="mx-auto mt-6 block rounded-[2.2rem]" aria-label={`${SOCKET_NAME} anstupsen`} data-testid="socket">
           <SocketFace mood={mood} poked={!!poke} key={poke?.n ?? 'idle'} />
         </button>
+        <p className="mt-2 text-center text-[0.8125rem] font-semibold text-ink-2">
+          {SOCKET_NAME}, deine Steckdose. <a href="#steckbrief" className="underline">Steckbrief</a>
+        </p>
       </div>
 
       <h1 id="hero-title" className="mt-3 text-center font-cond leading-none">
@@ -63,13 +66,13 @@ export function Hero({ view, status, slot, onRetry, onDemo }: Props) {
       {panic && (
         <div className="mt-5" data-testid="panic">
           <div className="mb-1.5 flex items-baseline justify-between gap-2">
-            <span className="font-cond text-[1.15rem] font-bold">Panik-Index</span>
+            <span className="font-cond text-[1.15rem] font-bold">{INDEX_NAME}</span>
             <span className="font-cond text-[1.5rem] font-extrabold leading-none" data-testid="panic-score">
               {panic.score}
               <span className="text-[1rem] font-semibold text-ink-2"> von 100</span>
             </span>
           </div>
-          <div className="bargraph" role="meter" aria-valuemin={0} aria-valuemax={100} aria-valuenow={panic.score} aria-label="Panik-Index">
+          <div className="bargraph" role="meter" aria-valuemin={0} aria-valuemax={100} aria-valuenow={panic.score} aria-label={INDEX_NAME}>
             {Array.from({ length: BAR_SEGMENTS }, (_, i) => (
               <span key={i} data-on={i < lit ? barColor(i) : undefined} />
             ))}
@@ -78,7 +81,7 @@ export function Hero({ view, status, slot, onRetry, onDemo }: Props) {
             <summary className="cursor-pointer select-none font-semibold text-ink">Wie wird das berechnet?</summary>
             <p className="mt-1.5">
               Ein Spaß-Index aus drei echten Messwerten: wie stark die Frequenz von 50 Hz abweicht, wie teuer der Börsenstrom ist und wie wenig Wind und Sonne
-              gerade liefern. Keine offizielle Kennzahl.
+              gerade liefern. Keine offizielle Kennzahl. Und ja: Bei Generatoren heißt das Magnetfeld-Machen wirklich Erregung.
             </p>
             <ul className="mt-1.5 space-y-0.5">
               {panic.factors.map((f) => (
@@ -115,4 +118,4 @@ export function Hero({ view, status, slot, onRetry, onDemo }: Props) {
   );
 }
 
-const FACTOR_LABEL = { frequency: 'Frequenz-Zittern', price: 'Preis-Puls', flaute: 'Flaute-Faktor' } as const;
+const FACTOR_LABEL = { frequency: 'Frequenz-Zittern', price: 'Preis-Puls', flaute: 'Flaute-Frust' } as const;
