@@ -1,13 +1,13 @@
 {
-  "name": "50 Hz of Grey – The German Grid Crisis Simulator",
+  "name": "50 Hz of Grey – Wie geht's dem Stromnetz?",
   "short_name": "50 Hz of Grey",
-  "description": "Satirische Netzleitwarte mit echten Energiedaten (Energy-Charts / Fraunhofer ISE).",
+  "description": "Echte Netzdaten. Unechte Panik. Frequenz, Börsenstrom und Strommix, erklärt von einer Steckdose mit Gefühlen.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#090D14",
-  "theme_color": "#090D14",
+  "background_color": "#CDD1CC",
+  "theme_color": "#CDD1CC",
   "lang": "de",
   "icons": [
     { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },

@@ -1,4 +1,4 @@
-/** Clipboard + URL helpers shared by share and easter-egg features. */
+/** Clipboard + URL helpers. */
 
 export function appUrl(): string {
   if (typeof window === 'undefined') return '';

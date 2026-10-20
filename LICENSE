@@ -24,5 +24,6 @@ SOFTWARE.
 
 Data shown by the application is provided by Energy-Charts (Fraunhofer ISE)
 under CC BY 4.0 (attribution: energy-charts.info); day-ahead prices by
-Bundesnetzagentur | SMARD.de (CC BY 4.0). Fonts: Space Grotesk, Inter and
-JetBrains Mono (SIL Open Font License). Icons: Lucide (ISC License).
+Bundesnetzagentur | SMARD.de (CC BY 4.0). Fonts: Barlow and Barlow Condensed
+(SIL Open Font License), DSEG7 by keshikan (SIL Open Font License, see
+src/assets/fonts/DSEG-LICENSE.txt). Icons: Lucide (ISC License).

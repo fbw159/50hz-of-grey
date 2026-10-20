@@ -7,7 +7,7 @@
  *  - hashed build assets (/assets/…): cache first (immutable by name)
  *  - everything else: network, no caching
  */
-const VERSION = 'v1';
+const VERSION = 'v2';
 const CACHE = `50hz-${VERSION}`;
 const scopePath = new URL(self.registration.scope).pathname;
 

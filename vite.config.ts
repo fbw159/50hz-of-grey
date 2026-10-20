@@ -45,13 +45,10 @@ export default defineConfig({
   build: {
     target: 'es2020',
     sourcemap: false,
-    chunkSizeWarningLimit: 900,
     rollupOptions: {
       output: {
         manualChunks: {
           react: ['react', 'react-dom'],
-          charts: ['recharts'],
-          motion: ['motion'],
         },
       },
     },

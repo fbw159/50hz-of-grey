@@ -1,67 +1,85 @@
 #!/usr/bin/env node
 /**
- * Renders the PWA icons and the Open-Graph image from inline SVG using the
- * Chromium that ships with Playwright. Run once after changing the logo:
+ * Renders the app icons, favicon and the Open-Graph image (socket with a
+ * face on switch-cabinet grey) with the Chromium that ships with Playwright.
+ * Run once after changing the logo:
  *   node scripts/generate-icons.mjs
  */
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright-core';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const outDir = path.join(__dirname, '..', 'public', 'icons');
+const root = path.join(__dirname, '..');
+const outDir = path.join(root, 'public', 'icons');
 
-function iconSvg(size, maskable) {
-  const pad = maskable ? size * 0.1 : 0;
-  const inner = size - 2 * pad;
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#A78BFA"/></linearGradient></defs>
-  <rect width="${size}" height="${size}" rx="${maskable ? 0 : size * 0.22}" fill="#090D14"/>
-  <g transform="translate(${pad} ${pad}) scale(${inner / 64})">
-    <rect x="1" y="1" width="62" height="62" rx="13" fill="none" stroke="#283447" stroke-width="2" opacity="${maskable ? 0 : 1}"/>
-    <path d="M10 40 L16 40 L20 30 L24 46 L28 34 L32 40 L54 40" fill="none" stroke="url(#g)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M36 12 L28 30 L35 30 L31 44 L42 24 L35 24 Z" fill="#22D3EE"/>
-  </g>
-</svg>`;
-}
-
-function ogSvg() {
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+/** The happy socket, drawn in a 200×200 box. */
+const SOCKET = `
   <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#A78BFA"/></linearGradient>
-    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(148,163,184,0.08)" stroke-width="1"/></pattern>
-    <radialGradient id="glow" cx="50%" cy="0%" r="80%"><stop offset="0" stop-color="rgba(34,211,238,0.25)"/><stop offset="1" stop-color="rgba(34,211,238,0)"/></radialGradient>
+    <linearGradient id="pl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fdfcf8"/><stop offset="1" stop-color="#e6e3da"/></linearGradient>
+    <radialGradient id="re" cx="50%" cy="40%" r="60%"><stop offset="0" stop-color="#ebe8df"/><stop offset="1" stop-color="#d2cec3"/></radialGradient>
+    <linearGradient id="me" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8d9398"/><stop offset="0.5" stop-color="#e3e6e8"/><stop offset="1" stop-color="#8d9398"/></linearGradient>
   </defs>
-  <rect width="1200" height="630" fill="#090D14"/>
-  <rect width="1200" height="630" fill="url(#grid)"/>
-  <rect width="1200" height="630" fill="url(#glow)"/>
-  <g transform="translate(90 120) scale(2.2)">
-    <path d="M10 40 L16 40 L20 30 L24 46 L28 34 L32 40 L54 40" fill="none" stroke="url(#g)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M36 12 L28 30 L35 30 L31 44 L42 24 L35 24 Z" fill="#22D3EE"/>
-  </g>
-  <text x="260" y="200" fill="#EAF0F7" font-family="Space Grotesk, Inter, Arial, sans-serif" font-size="84" font-weight="700">50 Hz of Grey</text>
-  <text x="260" y="260" fill="#94A3B8" font-family="Inter, Arial, sans-serif" font-size="34">The German Grid Crisis Simulator</text>
-  <text x="90" y="400" fill="#22D3EE" font-family="JetBrains Mono, Menlo, monospace" font-size="30">49,987 Hz   ·   −14,20 €/MWh   ·   EE 73,4 %</text>
-  <text x="90" y="470" fill="#EAF0F7" font-family="Space Grotesk, Inter, Arial, sans-serif" font-size="40" font-weight="600">Keeping the lights on. Against all odds.</text>
-  <text x="90" y="560" fill="#64748B" font-family="Inter, Arial, sans-serif" font-size="24">Echte Netzdaten (Energy-Charts / Fraunhofer ISE) · Satirische Leitwarte · Mobile first</text>
+  <rect x="8" y="10" width="184" height="184" rx="34" fill="#b9b6ac"/>
+  <rect x="8" y="6" width="184" height="184" rx="34" fill="url(#pl)" stroke="#c4c1b7" stroke-width="1.5"/>
+  <circle cx="100" cy="100" r="68" fill="url(#re)"/>
+  <circle cx="100" cy="100" r="68" fill="none" stroke="rgba(0,0,0,0.13)" stroke-width="3"/>
+  <rect x="86" y="36" width="28" height="11" rx="3" fill="url(#me)" stroke="#7d8287" stroke-width="0.8"/>
+  <rect x="86" y="153" width="28" height="11" rx="3" fill="url(#me)" stroke="#7d8287" stroke-width="0.8"/>
+  <g fill="#e9928a" opacity="0.35"><ellipse cx="57" cy="121" rx="10" ry="6"/><ellipse cx="143" cy="121" rx="10" ry="6"/></g>
+  <circle cx="72" cy="98" r="11" fill="#2b2f31"/><circle cx="128" cy="98" r="11" fill="#2b2f31"/>
+  <circle cx="75" cy="94" r="3.2" fill="#fff"/><circle cx="131" cy="94" r="3.2" fill="#fff"/>
+  <path d="M80 125 Q100 146 120 125" stroke="#2b2f31" stroke-width="4.5" stroke-linecap="round" fill="none"/>`;
+
+function iconSvg(size, { maskable = false, rounded = true } = {}) {
+  const inner = maskable ? 0.62 : 0.8;
+  const s = (size * inner) / 200;
+  const off = (size - 200 * s) / 2;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+  <rect width="${size}" height="${size}" rx="${rounded && !maskable ? size * 0.22 : 0}" fill="#cdd1cc"/>
+  <g transform="translate(${off} ${off}) scale(${s})">${SOCKET}</g>
 </svg>`;
 }
 
-async function render(browser, svg, width, height, file) {
+async function fontFace(family, file, weight) {
+  const data = await readFile(path.join(root, 'node_modules', file));
+  return `@font-face{font-family:'${family}';font-weight:${weight};src:url(data:font/woff2;base64,${data.toString('base64')}) format('woff2');}`;
+}
+
+async function ogHtml() {
+  const fonts = [
+    await fontFace('Barlow Condensed', '@fontsource/barlow-condensed/files/barlow-condensed-latin-800-normal.woff2', 800),
+    await fontFace('Barlow', '@fontsource/barlow/files/barlow-latin-500-normal.woff2', 500),
+  ].join('');
+  return `<!doctype html><html><head><style>${fonts}
+    body{margin:0;width:1200px;height:630px;background:#cdd1cc;font-family:Barlow;color:#293133;display:flex;align-items:center;gap:56px;padding:0 80px;box-sizing:border-box}
+    h1{font-family:'Barlow Condensed';font-weight:800;font-size:112px;line-height:.95;margin:0 0 18px}
+    p{font-size:40px;margin:0;color:#545d5a}
+    .tag{display:inline-block;margin-top:34px;background:#f2a900;border:2px solid #9c6d00;border-radius:16px;padding:10px 22px;font-size:34px;color:#1f1a0a}
+  </style></head><body>
+    <svg width="360" height="360" viewBox="0 0 200 200">${SOCKET}</svg>
+    <div><h1>50 Hz of Grey</h1><p>Wie geht's dem Stromnetz gerade?</p><span class="tag">Echte Netzdaten. Unechte Panik.</span></div>
+  </body></html>`;
+}
+
+async function render(browser, html, width, height, file) {
   const page = await browser.newPage({ viewport: { width, height }, deviceScaleFactor: 1 });
-  await page.setContent(`<!doctype html><html><body style="margin:0;background:transparent">${svg}</body></html>`);
+  await page.setContent(html.startsWith('<svg') ? `<!doctype html><html><body style="margin:0;background:transparent">${html}</body></html>` : html);
+  await page.waitForTimeout(200);
   const buf = await page.screenshot({ type: 'png', clip: { x: 0, y: 0, width, height }, omitBackground: true });
   await writeFile(file, buf);
   await page.close();
-  console.log('wrote', path.relative(process.cwd(), file));
+  console.log('wrote', path.relative(root, file));
 }
 
 const browser = await chromium.launch();
 await mkdir(outDir, { recursive: true });
-await render(browser, iconSvg(192, false), 192, 192, path.join(outDir, 'icon-192.png'));
-await render(browser, iconSvg(512, false), 512, 512, path.join(outDir, 'icon-512.png'));
-await render(browser, iconSvg(512, true), 512, 512, path.join(outDir, 'icon-maskable-512.png'));
-await render(browser, iconSvg(180, false), 180, 180, path.join(outDir, 'apple-touch-icon.png'));
-await render(browser, ogSvg(), 1200, 630, path.join(outDir, 'og-image.png'));
+await render(browser, iconSvg(192), 192, 192, path.join(outDir, 'icon-192.png'));
+await render(browser, iconSvg(512), 512, 512, path.join(outDir, 'icon-512.png'));
+await render(browser, iconSvg(512, { maskable: true }), 512, 512, path.join(outDir, 'icon-maskable-512.png'));
+await render(browser, iconSvg(180, { rounded: false }), 180, 180, path.join(outDir, 'apple-touch-icon.png'));
+await render(browser, await ogHtml(), 1200, 630, path.join(outDir, 'og-image.png'));
+await writeFile(path.join(root, 'public', 'favicon.svg'), iconSvg(64) + '\n');
+console.log('wrote public/favicon.svg');
 await browser.close();

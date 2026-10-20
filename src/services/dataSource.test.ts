@@ -3,8 +3,6 @@ import type { Dataset } from '@/types/data';
 import { DataSourceStore, pickFresher, resolveLiveBaseUrl, summarizeOrigins } from './dataSource';
 import { clearCachedDatasets, loadCachedDatasets, saveCachedDatasets } from './dataCache';
 import { decodeSnapshot } from './snapshotLoader';
-import { buildIncidents } from '@/features/incidents/incidentEngine';
-import { buildDemoDatasets } from '@/data/demoData';
 
 function ds(partial: Partial<Dataset>): Dataset {
   return {
@@ -132,19 +130,5 @@ describe('DataSourceStore', () => {
     expect(s.datasets.price?.origin).toBe('demo');
     expect(s.datasets.frequency?.series[0].values.every((v) => v === null || (v > 49.9 && v < 50.1))).toBe(true);
     vi.unstubAllGlobals();
-  });
-});
-
-describe('incident engine', () => {
-  it('produces data-driven and clearly marked satire entries', () => {
-    const now = Date.UTC(2026, 9, 15, 12);
-    const datasets = buildDemoDatasets(now);
-    const incidents = buildIncidents(datasets, now, 'engineer');
-    expect(incidents.some((i) => i.id === 'demo')).toBe(true);
-    expect(incidents.some((i) => i.isSatire)).toBe(true);
-    expect(incidents.filter((i) => !i.isSatire).every((i) => i.explanation.length > 10)).toBe(true);
-    // sorted newest first
-    for (let i = 1; i < incidents.length; i++) expect(incidents[i].t).toBeLessThanOrEqual(incidents[i - 1].t);
-    expect(buildIncidents(datasets, now, 'professional').some((i) => i.isSatire)).toBe(false);
   });
 });

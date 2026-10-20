@@ -31,8 +31,8 @@ export default defineConfig({
   projects: [
     // Phones first – mobile is the primary target. (The iPhone-SE profile runs in Chromium so the suite
     // works without a WebKit download; the viewport/touch emulation is what matters here.)
-    { name: 'mobile-chromium', use: { ...devices['Pixel 7'] }, testIgnore: /responsive\.spec\.ts/ },
-    { name: 'small-phone', use: { ...devices['iPhone SE'], browserName: 'chromium', defaultBrowserType: 'chromium' }, testIgnore: /responsive\.spec\.ts/ },
+    { name: 'mobile-chromium', use: { ...devices['Pixel 7'] } },
+    { name: 'small-phone', use: { ...devices['iPhone SE'], browserName: 'chromium', defaultBrowserType: 'chromium' } },
     { name: 'desktop-chromium', use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } } },
   ],
 });

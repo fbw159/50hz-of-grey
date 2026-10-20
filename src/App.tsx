@@ -1,141 +1,79 @@
-import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
-import { Header } from '@/components/layout/Header';
-import { BottomNav } from '@/components/navigation/BottomNav';
-import { Sidebar } from '@/components/navigation/Sidebar';
-import { SnackbarHost } from '@/components/ui/Snackbar';
-import { Confetti } from '@/components/animations/Confetti';
-import { Intro } from '@/components/animations/Intro';
-import { KpiSkeleton } from '@/components/ui/Skeleton';
-import { ManagementTransition } from '@/features/management/ManagementTransition';
-import { ShareSheet } from '@/features/share/ShareSheet';
-import { useHashRoute } from '@/hooks/useHashRoute';
-import { useConfettiBurst } from '@/hooks/useConfetti';
-import { useKonami } from '@/hooks/useKonami';
-import { showSnack } from '@/hooks/useSnackbar';
-import { useSettings, settingsStore, prefersReducedMotion, animationsEnabled } from '@/features/settings/settingsStore';
-import { achievementStore } from '@/features/achievements/achievementStore';
-import { usePanicIndex } from '@/features/panic/usePanicIndex';
-import { playSound } from '@/lib/sounds';
+import { useMemo } from 'react';
+import { useGridData, refreshGridData, setDemoMode } from '@/hooks/useGridData';
+import { useNow } from '@/hooks/useNow';
+import { showToast } from '@/hooks/useToast';
+import { buildView, type GridView } from '@/logic/view';
+import { MOODS } from '@/content/texts';
+import { berlinDayKey, formatBerlinTime } from '@/lib/dateUtils';
+import { eurPerMwhToCtPerKwh, formatNumber } from '@/lib/formatters';
+import { appUrl } from '@/lib/clipboard';
+import { shareText } from '@/lib/share';
+import { Header } from '@/components/Header';
+import { Hero } from '@/components/Hero';
+import { Meters } from '@/components/Meters';
+import { FrequencyCard } from '@/components/FrequencyCard';
+import { PriceCard } from '@/components/PriceCard';
+import { MixCard } from '@/components/MixCard';
+import { GameCard } from '@/components/GameCard';
+import { FactCard } from '@/components/FactCard';
+import { Footer } from '@/components/Footer';
+import { Toast } from '@/components/Toast';
 
-const ControlRoom = lazy(() => import('@/pages/ControlRoom'));
-const Market = lazy(() => import('@/pages/Market'));
-const Generation = lazy(() => import('@/pages/Generation'));
-const EngineeringLab = lazy(() => import('@/pages/EngineeringLab'));
-const More = lazy(() => import('@/pages/More'));
+const SLOT_MS = 10 * 60_000;
 
-function PageFallback() {
-  return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3" aria-busy="true" aria-label="Lädt">
-      <KpiSkeleton />
-      <KpiSkeleton />
-      <KpiSkeleton />
-    </div>
-  );
+function shareSummary(view: GridView): string {
+  const parts: string[] = [];
+  if (view.frequency) parts.push(`${formatNumber(view.frequency.value, 3)} Hz`);
+  if (view.price?.current) parts.push(`Börsenstrom ${formatNumber(eurPerMwhToCtPerKwh(view.price.current.value), 1)} ct/kWh`);
+  if (view.generation?.renewableShareOfLoad != null) parts.push(`${formatNumber(view.generation.renewableShareOfLoad, 0)} % Öko-Strom`);
+  const head = view.panic ? `Das Stromnetz ist gerade ${MOODS[view.panic.mood].verdict} (Panik-Index ${view.panic.score} von 100).` : 'Wie geht es dem Stromnetz gerade?';
+  return parts.length ? `${head} ${parts.join(', ')}.` : head;
 }
 
 export default function App() {
-  const settings = useSettings();
-  const { route, navigate } = useHashRoute();
-  const burst = useConfettiBurst();
-  const { panic } = usePanicIndex();
-  const [shareOpen, setShareOpen] = useState(false);
-  const [showIntro, setShowIntro] = useState(() => !settings.introSeen && !prefersReducedMotion(settingsStore.getState()));
-  const [transition, setTransition] = useState(false);
+  const data = useGridData();
+  const now = useNow(30_000);
+  const view = useMemo(() => buildView(data.datasets, now), [data.datasets, now]);
+  const slot = String(Math.floor(now / SLOT_MS));
+  const demo = data.mode === 'demo';
 
-  // theme + motion classes on <html>
-  useEffect(() => {
-    const html = document.documentElement;
-    html.classList.remove('theme-dark', 'theme-light', 'theme-retro');
-    html.classList.add(settings.retroScada ? 'theme-retro' : settings.theme === 'light' ? 'theme-light' : 'theme-dark');
-    html.classList.toggle('no-motion', !animationsEnabled(settings));
-    html.classList.toggle('force-motion', settings.motion === 'full' && settings.animations);
-    const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute('content', settings.retroScada ? '#020804' : settings.theme === 'light' ? '#eef2f7' : '#090D14');
-  }, [settings]);
-
-  // achievements → snackbars
-  useEffect(() => {
-    const off = achievementStore.onUnlock((def) => {
-      showSnack(`${def.title} – ${def.description}`, { tone: 'success', label: 'Achievement', durationMs: 5000 });
-      if (settingsStore.getState().sounds) playSound('success');
-    });
-    achievementStore.track('app-open');
-    return off;
-  }, []);
-
-  // scroll to top on page change
-  useEffect(() => {
-    window.scrollTo({ top: 0 });
-  }, [route.page]);
-
-  const toggleRetro = useCallback(() => {
-    const next = !settingsStore.getState().retroScada;
-    settingsStore.set('retroScada', next);
-    if (next) achievementStore.track('retro');
-    achievementStore.track('konami');
-    showSnack(next ? 'RETRO-SCADA-MODUS AKTIVIERT. BITTE MONITOR ENTSTAUBEN.' : 'Retro-SCADA-Modus beendet. Willkommen zurück in der Gegenwart.', { tone: 'info' });
-  }, []);
-  useKonami(toggleRetro);
-
-  const toggleManagement = useCallback(() => {
-    const next = !settingsStore.getState().managementMode;
-    if (next) {
-      setTransition(true);
-      achievementStore.track('management-on');
-      if (settingsStore.getState().sounds) playSound('alert');
-    } else {
-      settingsStore.update({ managementMode: false, moreGreen: false });
-      showSnack('Management Mode™ beendet. Die Physik hat wieder das Wort.', { tone: 'info' });
-    }
-  }, []);
-
-  const finishTransition = useCallback(() => {
-    settingsStore.set('managementMode', true);
-    setTransition(false);
-  }, []);
-
-  const finishIntro = useCallback(() => {
-    settingsStore.set('introSeen', true);
-    setShowIntro(false);
-  }, []);
-
-  let page;
-  switch (route.page) {
-    case 'market':
-      page = <Market />;
-      break;
-    case 'generation':
-      page = <Generation />;
-      break;
-    case 'lab':
-      page = <EngineeringLab sub={route.sub} />;
-      break;
-    case 'more':
-      page = <More sub={route.sub} onNavigate={navigate} />;
-      break;
-    default:
-      page = <ControlRoom onNavigate={navigate} />;
-  }
+  const onShare = async () => {
+    const result = await shareText('50 Hz of Grey', shareSummary(view), appUrl());
+    if (result === 'copied') showToast('Link kopiert. Ab damit in den Familienchat.');
+    if (result === 'failed') showToast('Teilen hat nicht geklappt.');
+  };
 
   return (
     <>
-      <div className="backdrop" aria-hidden="true" />
-      {animationsEnabled(settings) && !settings.retroScada && <div className="scanline hidden md:block" aria-hidden="true" />}
-      <div className="relative z-10 flex min-h-dvh">
-        <Sidebar active={route.page} onNavigate={navigate} />
-        <div className="flex min-w-0 flex-1 flex-col">
-          <Header onShare={() => setShareOpen(true)} onToggleManagement={toggleManagement} />
-          <main className="pb-nav mx-auto w-full max-w-7xl flex-1 px-4 pt-4 sm:px-6 md:pb-10" id="main">
-            <Suspense fallback={<PageFallback />}>{page}</Suspense>
-          </main>
+      {demo && (
+        <div className="hazard sticky top-0 z-40 p-1.5" data-testid="demo-banner">
+          <div className="mx-auto flex max-w-[34rem] items-center justify-between gap-3 rounded-lg bg-[#1f1a0a] px-3 py-2 text-[0.9rem] text-[#fbe7a8]">
+            <span className="font-semibold">Beispieldaten, nicht echt!</span>
+            <button type="button" className="underline" onClick={() => setDemoMode(false)} data-testid="demo-off">
+              Echte Daten laden
+            </button>
+          </div>
         </div>
+      )}
+      <div className="mx-auto max-w-[34rem] px-4">
+        <Header onShare={onShare} />
+        <main className="space-y-4">
+          <Hero view={view} status={data.status} slot={slot} onRetry={() => void refreshGridData()} onDemo={() => setDemoMode(true)} />
+          <Meters view={view} />
+          {!demo && data.snapshotFetchedAt && (
+            <p className="px-1 text-center text-[0.8125rem] text-ink-2" data-testid="data-age">
+              {data.offline ? 'Offline. ' : ''}Echte Messwerte, zuletzt abgeholt um {formatBerlinTime(data.snapshotFetchedAt)} Uhr.
+            </p>
+          )}
+          <FrequencyCard view={view} slot={slot} />
+          <PriceCard view={view} now={now} slot={slot} />
+          <MixCard view={view} />
+          <GameCard />
+          <FactCard dayKey={berlinDayKey(now)} />
+        </main>
+        <Footer />
       </div>
-      <BottomNav active={route.page} onNavigate={navigate} />
-      <SnackbarHost />
-      <Confetti burst={burst} />
-      <ShareSheet open={shareOpen} onClose={() => setShareOpen(false)} panicValue={panic?.value ?? null} />
-      <ManagementTransition active={transition} onDone={finishTransition} />
-      {showIntro && <Intro onDone={finishIntro} />}
+      <Toast />
     </>
   );
 }
