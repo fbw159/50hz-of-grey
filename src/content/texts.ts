@@ -276,7 +276,7 @@ export const TICKER_SATIRE: string[] = [
   'Apokalypse wegen stabiler Netzfrequenz abgesagt',
   'Wasserkocher-Gewerkschaft droht mit Halbzeitpause',
   'Mehrfachsteckdose in Reihe gesteckt, Feuerwehr schüttelt den Kopf',
-  'Sonne geht morgen wieder auf, bestätigt Fraunhofer-Sprecherin',
+  'Sonne geht morgen wieder auf, bestätigen Astronomen',
   'Wärmepumpe verliebt sich in Pufferspeicher',
   'Toaster verweigert Dienst bei Börsenpreisen über 20 Cent',
   'Stromzähler dreht sich so schnell, dass er abhebt',

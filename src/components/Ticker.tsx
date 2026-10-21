@@ -2,11 +2,12 @@ import type { GridView } from '@/logic/view';
 import { INDEX_NAME, TICKER_FREQUENCY, TICKER_SATIRE } from '@/content/texts';
 import { eurPerMwhToCtPerKwh, formatNumber } from '@/lib/formatters';
 import { hashString } from '@/lib/timeseries';
+import { frequencyMood } from '@/logic/panic';
 
 /** Breaking-news ticker: real numbers, absurd headlines. */
 export function Ticker({ view, slot }: { view: GridView; slot: string }) {
   const items: string[] = [];
-  if (view.frequency && view.panic) items.push(`Netzfrequenz ${formatNumber(view.frequency.value, 3)} Hz: ${TICKER_FREQUENCY[view.panic.mood]}`);
+  if (view.frequency) items.push(`Netzfrequenz ${formatNumber(view.frequency.value, 3)} Hz: ${TICKER_FREQUENCY[frequencyMood(view.frequency.deviationMilliHz)]}`);
   const price = view.price?.current?.value;
   if (price !== undefined) {
     const ct = formatNumber(eurPerMwhToCtPerKwh(price), 1);
