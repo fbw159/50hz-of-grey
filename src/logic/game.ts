@@ -45,6 +45,12 @@ export const GAME_EVENTS: GameEvent[] = [
   { id: 'battery', emoji: '🔋', text: 'Ein Großspeicher springt ein und speist ein.', gw: -1 },
   { id: 'pump', emoji: '💧', text: 'Ein Pumpspeicher fängt an, Wasser bergauf zu pumpen.', gw: 1 },
   { id: 'server', emoji: '🖥️', text: 'Ein Rechenzentrum startet ein KI-Training.', gw: 1 },
+  { id: 'meteor', emoji: '☄️', text: 'Ein Meteorit verfehlt knapp ein Umspannwerk. Alle schalten vor Schreck das Licht an.', gw: 3 },
+  { id: 'zombies', emoji: '🧟', text: 'Zombie-Apokalypse! Die Untoten laden alle gleichzeitig ihre E-Bikes.', gw: 2 },
+  { id: 'monster', emoji: '🦖', text: 'Ein Riesenmonster legt sich zum Sonnen auf eine Hochspannungsleitung.', gw: 4 },
+  { id: 'ufo', emoji: '🛸', text: 'Ein Ufo landet in der Lüneburger Heide und zapft eine Steckdose an.', gw: 2 },
+  { id: 'prepper', emoji: '🕯️', text: 'Prepper-Alarm: Alle zünden Kerzen an und schalten das Licht aus.', gw: -2 },
+  { id: 'eclipse', emoji: '🌑', text: 'Sonnenfinsternis! Die Solaranlagen sehen schwarz.', gw: 3 },
 ];
 
 export type GameStatus = 'running' | 'won' | 'low' | 'high';
@@ -125,18 +131,18 @@ export interface GameRank {
 export function rankFor(state: GameState): GameRank {
   const calmShare = state.t > 0 ? state.calmSeconds / state.t : 0;
   if (state.status === 'won') {
-    if (calmShare >= 0.8) return { title: 'Meister der Spannung', text: 'Fast die ganze Zeit im grünen Bereich. Mr. Grey ist beeindruckt und ein kleines bisschen verliebt.' };
-    if (calmShare >= 0.5) return { title: 'Frequenz-Flüsterer', text: 'Durchgehalten und meistens ruhig geblieben. Du weißt, wie man mit Spannung umgeht.' };
-    return { title: 'Netzretter mit Schweißperlen', text: 'Geschafft! Elegant war es nicht, aber das Licht blieb an.' };
+    if (calmShare >= 0.8) return { title: 'Retter der Zivilisation', text: 'Fast die ganze Zeit im grünen Bereich. Die Menschheit schuldet dir was, Mr. Grey sowieso.' };
+    if (calmShare >= 0.5) return { title: 'Meister der Spannung', text: 'Durchgehalten und meistens ruhig geblieben. Du weißt, wie man mit Spannung umgeht.' };
+    return { title: 'Netzretter mit Schweißperlen', text: 'Geschafft! Elegant war es nicht, aber die Apokalypse fällt aus.' };
   }
-  if (state.t < 12) return { title: 'Azubi mit Berührungsängsten', text: 'Kein Problem, beim ersten Mal sind alle nervös.' };
+  if (state.t < 12) return { title: 'Azubi mit Berührungsängsten', text: 'Kein Problem, beim ersten Mal sind alle nervös. Die Zivilisation erholt sich bestimmt.' };
   if (state.t < 30) return { title: 'Schichtleitung mit Herzklopfen', text: 'Nicht schlecht. Beim nächsten Mal etwas schneller gegensteuern.' };
   return { title: 'Kurz vorm Höhepunkt', text: 'So knapp! Noch ein paar Sekunden und du hättest es geschafft.' };
 }
 
 export function lossText(status: GameStatus): string | null {
-  if (status === 'low') return 'Unter 49,8 Hz: zu wenig Leistung. Passiert den Besten. In einer echten Leitwarte würde jetzt das Alarmtelefon klingeln.';
-  if (status === 'high') return 'Über 50,2 Hz: zu viel des Guten. Ab hier ziehen sich Solaranlagen automatisch zurück, das ist in echt so geregelt.';
+  if (status === 'low') return 'Blackout! Die Zivilisation ist am Ende, zumindest bis zum Schwarzstart. In echt würde unter 49,8 Hz erst mal das Alarmtelefon klingeln.';
+  if (status === 'high') return 'Überfrequenz! Zu viel des Guten. Ab 50,2 Hz ziehen sich Solaranlagen automatisch zurück, das ist in echt so geregelt.';
   return null;
 }
 

@@ -47,6 +47,18 @@ test.describe('with real data (snapshot)', () => {
     await expect(page.getByTestId('fact-text')).not.toHaveText(before ?? '');
   });
 
+  test('the Not-Aus button causes a blackout and a black start', async ({ page }) => {
+    await page.goto('./');
+    await expect(page.getByTestId('ticker')).toContainText('Eilmeldung');
+    await expect(page.getByTestId('doom-clock')).toContainText(/23:\d{2}/);
+    await page.getByTestId('estop').click();
+    await expect(page.getByTestId('blackout')).toContainText('Blackout!');
+    await expect(page.getByTestId('blackout')).toContainText('Licht ist wieder an!', { timeout: 8000 });
+    await page.getByTestId('blackout-close').click();
+    await expect(page.getByTestId('blackout')).toHaveCount(0);
+    await expect(page.getByTestId('blackout-count')).toContainText('1');
+  });
+
   test('the game runs and reacts to the buttons', async ({ page }) => {
     await page.goto('./#spiel');
     await page.getByTestId('game-start').click();

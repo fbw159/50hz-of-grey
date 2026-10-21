@@ -1,7 +1,9 @@
 import { useRef, useState } from 'react';
 import { SocketFace, type FaceMood } from './SocketFace';
 import type { GridView } from '@/logic/view';
-import { ERROR_TEXT, INDEX_NAME, LOADING_TEXT, MOODS, SOCKET_NAME, SOCKET_POKES, pick } from '@/content/texts';
+import { ERROR_TEXT, INDEX_NAME, LOADING_TEXT, MOODS, SOCKET_NAME, SOCKET_POKES, doomLine, pick } from '@/content/texts';
+import { doomClockTime, minutesToMidnight } from '@/logic/panic';
+import { Seg } from './Meters';
 import { formatBerlinTime } from '@/lib/dateUtils';
 
 interface Props {
@@ -77,11 +79,21 @@ export function Hero({ view, status, slot, onRetry, onDemo }: Props) {
               <span key={i} data-on={i < lit ? barColor(i) : undefined} />
             ))}
           </div>
-          <details className="mt-2 text-[0.875rem] text-ink-2">
+          <div className="mt-4 flex items-center gap-3 rounded-2xl bg-ink p-2.5 pr-3 text-panel-hi" data-testid="doom-clock">
+            <span className="lcd shrink-0 px-2.5 py-2">
+              <Seg text={doomClockTime(panic.score)} className="text-[1.5rem] leading-none" />
+            </span>
+            <span className="min-w-0 text-[0.9rem] leading-snug">
+              <strong className="block font-cond text-[1.1rem]">Weltuntergangsuhr</strong>
+              Noch {minutesToMidnight(panic.score)} {minutesToMidnight(panic.score) === 1 ? 'Minute' : 'Minuten'} bis Mitternacht. {doomLine(minutesToMidnight(panic.score))}
+            </span>
+          </div>
+          <details className="mt-3 text-[0.875rem] text-ink-2">
             <summary className="cursor-pointer select-none font-semibold text-ink">Wie wird das berechnet?</summary>
             <p className="mt-1.5">
               Ein Spaß-Index aus drei echten Messwerten: wie stark die Frequenz von 50 Hz abweicht, wie teuer der Börsenstrom ist und wie wenig Wind und Sonne
-              gerade liefern. Keine offizielle Kennzahl. Und ja: Bei Generatoren heißt das Magnetfeld-Machen wirklich Erregung.
+              gerade liefern. Keine offizielle Kennzahl. Und ja: Bei Generatoren heißt das Magnetfeld-Machen wirklich Erregung. Die Weltuntergangsuhr rechnet den
+              Index in Minuten bis Mitternacht um (0 = 23:00 Uhr, 100 = 23:59 Uhr). Reine Satire, das Netz ist sehr stabil.
             </p>
             <ul className="mt-1.5 space-y-0.5">
               {panic.factors.map((f) => (

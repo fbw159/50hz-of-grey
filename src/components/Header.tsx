@@ -10,7 +10,7 @@ export function Header({ onShare }: { onShare: () => void }) {
         </svg>
         <div className="min-w-0">
           <p className="font-cond text-[1.55rem] font-extrabold leading-none tracking-tight">50 Hz of Grey</p>
-          <p className="truncate text-[0.875rem] leading-tight text-ink-2">Echte Daten, viel Spannung.</p>
+          <p className="text-[0.875rem] leading-tight text-ink-2">Echte Daten, viel Spannung, kurz vor dem Weltuntergang.</p>
         </div>
       </div>
       <button type="button" className="btn shrink-0 !px-3.5" onClick={onShare} data-testid="share">

@@ -12,11 +12,14 @@ Eine einzige Seite, gebaut fürs Handy:
 
 - **Mr. Grey, die Steckdose,** zeigt die Laune des Netzes: tiefenentspannt, entspannt, leicht erregt, ganz schön heiß oder außer Kontrolle. Antippen erlaubt (er hat Grenzen).
 - **Erregungs-Index (0–100):** ein Spaß-Index aus drei echten Werten – Abweichung der Frequenz von 50 Hz, Börsenstrompreis und wie wenig Wind und Sonne gerade liefern. „Erregung“ heißt bei Generatoren übrigens wirklich so.
+- **Weltuntergangsuhr:** rechnet den Index in Minuten bis Mitternacht um. Reine Satire.
+- **Eilmeldungs-Ticker:** echte Werte und absurde Endzeit-Schlagzeilen.
 - **Drei Messgeräte:** Netzfrequenz, Börsenstrompreis, Öko-Anteil.
+- **Not-Aus („Bloß nicht drücken“):** löst einen Blackout aus, dann Schwarzstart, dann Licht an – plus der echte Fakt, wie selten Stromausfälle in Deutschland sind.
 - **Der Puls des Netzes:** die Frequenz der letzten zehn Minuten als EKG.
 - **Was kostet der Spaß gerade?** Börsenpreis jetzt, Stundenbalken für heute und morgen und der Schleudergang-Tipp (billigste und teuerste noch kommende Stunde).
 - **Wer bringt das Netz gerade in Fahrt?** Sonne, Wind, Kohle, Gas & Co. mit je einem Spruch.
-- **Spiel „Halt die 50 Hz!“:** 45 Sekunden Leitwarte – Halbzeitpausen, Wolken und Sturmtiefs mit dem Kraftwerk ausgleichen.
+- **Spiel „Halt die 50 Hz!“:** 45 Sekunden Leitwarte – Halbzeitpausen, Kuschelabende, Meteoriten und Zombies mit dem Kraftwerk ausgleichen.
 - **Steckbrief von Mr. Grey:** sucht Stecker mit Schutzkontakt, Safeword „Lastabwurf“.
 - **Bettgeflüster für Ingenieure:** kurze, echte Fakten zum Stromnetz.
 

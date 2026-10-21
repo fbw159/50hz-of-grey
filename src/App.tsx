@@ -4,6 +4,7 @@ import { useNow } from '@/hooks/useNow';
 import { showToast } from '@/hooks/useToast';
 import { buildView, type GridView } from '@/logic/view';
 import { INDEX_NAME, MOODS } from '@/content/texts';
+import { doomClockTime } from '@/logic/panic';
 import { berlinDayKey, formatBerlinTime } from '@/lib/dateUtils';
 import { eurPerMwhToCtPerKwh, formatNumber } from '@/lib/formatters';
 import { appUrl } from '@/lib/clipboard';
@@ -19,6 +20,8 @@ import { FactCard } from '@/components/FactCard';
 import { ProfileCard } from '@/components/ProfileCard';
 import { Footer } from '@/components/Footer';
 import { Toast } from '@/components/Toast';
+import { Ticker } from '@/components/Ticker';
+import { KillSwitch } from '@/components/KillSwitch';
 
 const SLOT_MS = 10 * 60_000;
 
@@ -27,7 +30,9 @@ function shareSummary(view: GridView): string {
   if (view.frequency) parts.push(`${formatNumber(view.frequency.value, 3)} Hz`);
   if (view.price?.current) parts.push(`Börsenstrom ${formatNumber(eurPerMwhToCtPerKwh(view.price.current.value), 1)} ct/kWh`);
   if (view.generation?.renewableShareOfLoad != null) parts.push(`${formatNumber(view.generation.renewableShareOfLoad, 0)} % Öko-Strom`);
-  const head = view.panic ? `Das Stromnetz ist gerade ${MOODS[view.panic.mood].verdict} (${INDEX_NAME} ${view.panic.score} von 100).` : 'Wie erregt ist das Stromnetz gerade?';
+  const head = view.panic
+    ? `Das Stromnetz ist gerade ${MOODS[view.panic.mood].verdict} (${INDEX_NAME} ${view.panic.score} von 100, Weltuntergangsuhr ${doomClockTime(view.panic.score)} Uhr).`
+    : 'Wie erregt ist das Stromnetz gerade?';
   return parts.length ? `${head} ${parts.join(', ')}.` : head;
 }
 
@@ -59,6 +64,7 @@ export default function App() {
       <div className="mx-auto max-w-[34rem] px-4">
         <Header onShare={onShare} />
         <main className="space-y-4">
+          <Ticker view={view} slot={slot} />
           <Hero view={view} status={data.status} slot={slot} onRetry={() => void refreshGridData()} onDemo={() => setDemoMode(true)} />
           <Meters view={view} />
           {!demo && data.snapshotFetchedAt && (
@@ -66,6 +72,7 @@ export default function App() {
               {data.offline ? 'Offline. ' : ''}Echte Messwerte, zuletzt abgeholt um {formatBerlinTime(data.snapshotFetchedAt)} Uhr.
             </p>
           )}
+          <KillSwitch />
           <FrequencyCard view={view} slot={slot} />
           <PriceCard view={view} now={now} slot={slot} />
           <MixCard view={view} />

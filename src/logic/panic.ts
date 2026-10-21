@@ -85,3 +85,15 @@ export function frequencyMood(deviationMilliHz: number): Mood {
   if (d < 150) return 'sweaty';
   return 'panic';
 }
+
+/**
+ * "Weltuntergangsuhr" – satire in the style of the Doomsday Clock: the higher
+ * the index, the closer to midnight. 0 → 23:00, 100 → 23:59.
+ */
+export function minutesToMidnight(score: number): number {
+  return Math.max(1, Math.round(60 * (1 - clamp(score, 0, 100) / 100)));
+}
+
+export function doomClockTime(score: number): string {
+  return `23:${String(60 - minutesToMidnight(score)).padStart(2, '0')}`;
+}

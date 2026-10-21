@@ -40,3 +40,15 @@ describe('Panik-Index', () => {
     expect([5, 30, 70, 120, 220].map(frequencyMood)).toEqual(['zen', 'chill', 'nervous', 'sweaty', 'panic']);
   });
 });
+
+describe('Weltuntergangsuhr', () => {
+  it('moves towards midnight with the index', async () => {
+    const { minutesToMidnight, doomClockTime } = await import('./panic');
+    expect(minutesToMidnight(0)).toBe(60);
+    expect(doomClockTime(0)).toBe('23:00');
+    expect(minutesToMidnight(26)).toBe(44);
+    expect(doomClockTime(26)).toBe('23:16');
+    expect(minutesToMidnight(100)).toBe(1);
+    expect(doomClockTime(100)).toBe('23:59');
+  });
+});

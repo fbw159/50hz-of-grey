@@ -15,6 +15,7 @@ export type Led = 'ok' | 'warn' | 'alarm' | 'off';
 const LED_COLOR: Record<Led, string> = { ok: '#3f9b55', warn: '#f2a900', alarm: '#c8392b', off: '#9aa09b' };
 
 function segPrice(ct: number): string {
+  if (Math.abs(ct) < 0.05) return '0.0'; // no "-0.0"
   return Math.abs(ct) >= 100 ? Math.round(ct).toString() : ct.toFixed(1);
 }
 

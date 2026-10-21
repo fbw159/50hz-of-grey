@@ -32,6 +32,7 @@ export const MOODS: Record<Mood, MoodText> = {
       'Wechselstrom eben: rein, raus, 50-mal pro Sekunde. Völlig entspannt.',
       'Kein Zittern, kein Stöhnen. Nur pure Harmonie im Netz.',
       'So ruhig, dass in der Leitwarte schon Kerzen angezündet werden.',
+      'Die Apokalypse hat heute frei. Sie liegt mit Mr. Grey auf dem Sofa.',
     ],
   },
   chill: {
@@ -41,6 +42,7 @@ export const MOODS: Record<Mood, MoodText> = {
       'Ein bisschen Wackeln gehört dazu. Wie in jeder guten Beziehung.',
       'Normalbetrieb. Langweilig für uns, gut für alle anderen.',
       'Die Spannung ist da, aber niemand übertreibt.',
+      'Der Weltuntergang wurde auf unbestimmte Zeit verschoben. Schon wieder.',
     ],
   },
   nervous: {
@@ -50,6 +52,7 @@ export const MOODS: Record<Mood, MoodText> = {
       'Die Spannung steigt. Irgendwer hat sehr viele Wasserkocher gleichzeitig angemacht.',
       'Mr. Grey wird unruhig und zupft an seiner Krawatte.',
       'Noch alles im Rahmen. Aber es knistert.',
+      'Die ersten Prepper zählen ihre Dosenravioli. Kein Grund zur Sorge, die zählen immer.',
     ],
   },
   sweaty: {
@@ -59,6 +62,7 @@ export const MOODS: Record<Mood, MoodText> = {
       'Die Leitwarte lockert die Krawatte. Und nicht nur die.',
       'Jetzt bitte nicht alle gleichzeitig die Sauna anwerfen.',
       'Es wird schwitzig. Die Regelkraftwerke geben alles.',
+      'Endzeitstimmung in der Leitwarte. Jemand hat das Notfall-Kuchenfach geöffnet.',
     ],
   },
   panic: {
@@ -67,6 +71,7 @@ export const MOODS: Record<Mood, MoodText> = {
       'Safeword! Safeword! (Es lautet übrigens „Lastabwurf“.)',
       'Zu viel Spannung. Selbst Mr. Grey braucht jetzt eine kalte Dusche.',
       'Hier blinkt alles rot. Keine Sorge: Echte Netzbetreiber bleiben cooler als diese Steckdose.',
+      'Die vier Reiter der Apokalypse sind da: Flaute, Lastspitze, Gaspreis und ein vergessener Wasserkocher.',
     ],
   },
 };
@@ -89,6 +94,8 @@ export const SOCKET_POKES = [
   'Du willst Spannung? Ich hab 230 Volt.',
   'Nur mit trockenen Händen, bitte. Ich bin da empfindlich.',
   'Hihi, das kitzelt in der Phase.',
+  'Noch zehnmal und es gibt einen Kurzschluss. Und dann ist die Welt dunkel. Deine Schuld.',
+  'Ich habe den Weltuntergang schon dreimal überlebt. Du bist harmlos.',
 ];
 
 /** Dating profile of the socket ("Steckbrief" – a pun in German). */
@@ -100,6 +107,8 @@ export const PROFILE: { label: string; value: string }[] = [
   { label: 'Sucht', value: 'Stecker mit Schutzkontakt für eine feste Verbindung' },
   { label: 'Mag', value: 'Erdung, Gleichmäßigkeit, Kerzenschein zur Lastspitze' },
   { label: 'Mag nicht', value: 'Kurzschlüsse, nasse Finger, Mehrfachstecker hintereinander' },
+  { label: 'Lieblingsfilm', value: 'Armageddon. Wegen der Spannung.' },
+  { label: 'Notfallplan', value: 'Kerzen, Kurbelradio, Dosenravioli' },
   { label: 'Safeword', value: 'Lastabwurf' },
 ];
 
@@ -131,6 +140,7 @@ export const PRICE_TEXT: Record<PriceMood, { tag: string; lines: string[] }> = {
     lines: [
       'Negativer Preis: Man wird fürs Abnehmen bezahlt. Klingt unanständig, ist aber Strombörse.',
       'Ein unmoralisches Angebot: Die Börse zahlt dir Geld, wenn du ihr den Strom abnimmst.',
+      'Die Welt steht kopf: Strom kostet weniger als nichts. Ökonomen suchen Schutz im Keller.',
     ],
   },
   cheap: {
@@ -143,13 +153,18 @@ export const PRICE_TEXT: Record<PriceMood, { tag: string; lines: string[] }> = {
   },
   pricey: {
     tag: 'Teuer',
-    lines: ['Teuer. Für diesen Preis erwartet man eigentlich mehr als nur Strom.', 'Die Börse spielt die Unnahbare. Meist laufen dann viele Gaskraftwerke.'],
+    lines: [
+      'Teuer. Für diesen Preis erwartet man eigentlich mehr als nur Strom.',
+      'Die Börse spielt die Unnahbare. Meist laufen dann viele Gaskraftwerke.',
+      'Bei dem Preis wird der Toaster zum Luxusgut.',
+    ],
   },
   ouch: {
     tag: 'Autsch',
     lines: [
       'Autsch. Das ist kein Spaß mehr, das ist Schmerz. Und zwar nicht die angenehme Sorte.',
       'Richtig teuer. Jetzt bestimmen die Kraftwerke mit den höchsten Kosten den Preis.',
+      'Endzeit-Preise. Wer jetzt Strom kauft, bezahlt mit Gold und Dosenravioli.',
     ],
   },
 };
@@ -233,5 +248,55 @@ export const FACTS: string[] = [
   'Dunkelflaute heißt: kaum Wind und kaum Sonne, oft mehrere Tage im Winter. Dann liefern Kohle, Gas, Biomasse und Importe.',
   'Wenn die Leitungen von Nord nach Süd voll sind, wird im Norden Wind abgeregelt und im Süden ein Kraftwerk hochgefahren. Das heißt Redispatch und kostet Milliarden.',
   'Die Netzfrequenz hier wird in Freiburg gemessen, beim Fraunhofer ISE. Sie ist im ganzen europäischen Verbundnetz praktisch gleich.',
+  'Weltuntergang? Eher nicht: 2024 war jeder Stromkunde in Deutschland im Schnitt 11,7 Minuten ohne Strom. Im ganzen Jahr. Das Netz gehört zu den zuverlässigsten der Welt.',
+  'Nach einem großen Blackout kommt der Schwarzstart: Wasserkraftwerke und andere Anlagen fahren ohne Strom von außen hoch und bauen das Netz Stück für Stück wieder auf.',
   'Der Grauton dieser Seite ist RAL 7035 Lichtgrau, die Farbe vieler Schaltschränke. Das klassische RAL-Register kennt 38 Grautöne. Fünfzig wären uns lieber gewesen.',
 ];
+
+/* ------------------------------- Doom clock ------------------------------- */
+
+export function doomLine(minutes: number): string {
+  if (minutes > 40) return 'Die Apokalypse hat heute frei.';
+  if (minutes > 20) return 'Die Apokalypse schaut kurz durchs Fenster und geht wieder.';
+  if (minutes > 10) return 'Die Apokalypse zieht sich schon mal die Schuhe an.';
+  return 'Es klingelt. Vermutlich nur der Paketbote. Vermutlich.';
+}
+
+/* ---------------------------------- Ticker -------------------------------- */
+
+/** Absurd breaking news, mixed with the real numbers in the ticker. */
+export const TICKER_SATIRE: string[] = [
+  'Experten warnen vor zu viel Normalität',
+  'Windrad in Brandenburg dreht sich aus Protest linksherum',
+  'Kohlekraftwerk bucht Wellness-Wochenende',
+  'Leitwarte meldet: Kaffeevorrat kritisch',
+  'Bundesamt für Weltuntergang: heute leider nichts',
+  'Mr. Grey fordert mehr Schutzkontakt',
+  'Prepper kaufen Kerzen, Kerzenindustrie jubelt',
+  'Apokalypse wegen stabiler Netzfrequenz abgesagt',
+  'Wasserkocher-Gewerkschaft droht mit Halbzeitpause',
+  'Mehrfachsteckdose in Reihe gesteckt, Feuerwehr schüttelt den Kopf',
+  'Sonne geht morgen wieder auf, bestätigt Fraunhofer-Sprecherin',
+  'Wärmepumpe verliebt sich in Pufferspeicher',
+  'Toaster verweigert Dienst bei Börsenpreisen über 20 Cent',
+  'Stromzähler dreht sich so schnell, dass er abhebt',
+];
+
+export const TICKER_FREQUENCY: Record<Mood, string> = {
+  zen: 'Netz so ruhig, dass Seismografen Langeweile melden',
+  chill: 'Leichtes Zittern, Europa tanzt im Takt',
+  nervous: 'Regelreserve greift beherzt zu',
+  sweaty: 'Leitwarten in ganz Europa lockern die Krawatten',
+  panic: 'Safeword wird vorsorglich bereitgehalten',
+};
+
+/* --------------------------------- Not-Aus -------------------------------- */
+
+export const BLACKOUT_STEPS = {
+  boom: { title: 'Blackout!', text: 'Ganz Deutschland ist dunkel. Der Kühlschrank tropft, das WLAN ist weg, die Zivilisation wankt.' },
+  restart: { title: 'Schwarzstart läuft …', text: 'Ein Wasserkraftwerk fährt hoch, dann Insel für Insel der Rest. Mr. Grey hält die Luft an.' },
+  done: {
+    title: 'Licht ist wieder an!',
+    text: 'In echt dauert ein Schwarzstart viele Stunden. Zum Glück ist ein großer Blackout in Deutschland sehr unwahrscheinlich: 2024 waren es im Schnitt 11,7 Minuten Stromausfall pro Kunde. Im ganzen Jahr.',
+  },
+};
