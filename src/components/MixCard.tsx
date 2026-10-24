@@ -1,21 +1,20 @@
 import { useState } from 'react';
 import type { GridView } from '@/logic/view';
 import { SOURCES, sourceCaption, tradeText } from '@/content/texts';
-import { formatBerlinTime, zonedParts } from '@/lib/dateUtils';
+import { formatBerlinShortDate, formatBerlinTime, isSameBerlinDay } from '@/lib/dateUtils';
 import { formatNumber } from '@/lib/formatters';
 import { formatBig, powerEquivalents } from '@/logic/convert';
 
 const TOP = 5;
 
-export function MixCard({ view }: { view: GridView }) {
+export function MixCard({ view, now }: { view: GridView; now: number }) {
   const [all, setAll] = useState(false);
   const g = view.generation;
   const rows = view.mix;
   if (!g || rows.length === 0) return null;
   const shown = all ? rows : rows.slice(0, TOP);
 
-  const hour = zonedParts(g.t).hour;
-  const isNight = hour < 7 || hour >= 19;
+  const stand = isSameBerlinDay(g.t, now) ? `${formatBerlinTime(g.t)} Uhr` : `${formatBerlinShortDate(g.t)}, ${formatBerlinTime(g.t)} Uhr`;
   const positive = rows.filter((r) => r.mw > 0);
   const share = g.renewableShareOfLoad;
   const trade = g.netImportMw;
@@ -35,7 +34,9 @@ export function MixCard({ view }: { view: GridView }) {
         </p>
       )}
       <p className="fine mt-1">
-        Anteil von Wind, Sonne, Biomasse und Wasser am Verbrauch, Stand {formatBerlinTime(g.t)} Uhr. Diese Daten kommen etwa ein bis zwei Stunden verzögert.
+        Anteil von Wind, Sonne, Biomasse und Wasser am Verbrauch, Stand {stand}. Diese Daten kommen etwa ein bis zwei Stunden verzögert.
+        {share !== null && share > 100 && ' Über 100 %: Es wird mehr Öko-Strom erzeugt als verbraucht, der Rest geht ins Ausland oder in Speicher.'}
+        {g.stale && ' Neuere Werte fehlen gerade, deshalb zählen diese nicht für Schlagzeile und Index.'}
       </p>
 
       <div className="mt-3 flex h-7 overflow-hidden rounded-lg border border-line" role="img" aria-label="Anteile der Stromquellen an der Erzeugung">
@@ -59,7 +60,7 @@ export function MixCard({ view }: { view: GridView }) {
                     {formatNumber(r.mw / 1000, 1)} GW <span className="font-normal text-ink-2">({formatNumber(Math.max(0, r.sharePct), 0)} %)</span>
                   </span>
                 </div>
-                <p className="text-[0.875rem] leading-snug text-ink-2">{sourceCaption(r.id, r.mw, r.utilisation, isNight)}</p>
+                <p className="text-[0.875rem] leading-snug text-ink-2">{sourceCaption(r.id, r.mw, r.utilisation)}</p>
               </div>
             </li>
           );

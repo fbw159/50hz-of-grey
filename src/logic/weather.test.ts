@@ -87,3 +87,26 @@ describe('Netz-Wetter without tomorrow forecasts', () => {
     expect(blocks).toHaveLength(4);
   });
 });
+
+describe('Netz-Wetter with half the wind forecast', () => {
+  it('does not add up onshore and offshore when one of them is missing', () => {
+    const start = startOfBerlinDay('2026-10-21');
+    const datasets = {
+      forecastWindOnshore: ds('forecastWindOnshore', 'wind_onshore', start, Array(96).fill(20_000)),
+      // offshore only for the first half of the day
+      forecastWindOffshore: ds('forecastWindOffshore', 'wind_offshore', start, Array(48).fill(5_000)),
+    };
+    const blocks = buildWeather(datasets, start, 4);
+    expect(blocks[0].windGw).toBeCloseTo(25);
+    expect(blocks[1].windGw).toBeCloseTo(25);
+    // the afternoon would otherwise show a fake lull of 20 GW; without a full forecast it is left out
+    expect(blocks).toHaveLength(2);
+  });
+
+  it('uses onshore alone when the offshore forecast failed completely', () => {
+    const start = startOfBerlinDay('2026-10-21');
+    const blocks = buildWeather({ forecastWindOnshore: ds('forecastWindOnshore', 'wind_onshore', start, Array(96).fill(20_000)) }, start, 4);
+    expect(blocks.every((b) => b.windGw !== null && Math.abs(b.windGw - 20) < 1e-9)).toBe(true);
+  });
+});
+

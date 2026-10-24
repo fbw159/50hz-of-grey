@@ -2,7 +2,7 @@
 /**
  * 50 Hz of Grey – data snapshot updater
  *
- * Fetches the datasets the dashboard needs from the Energy-Charts API v2
+ * Fetches the datasets the page needs from the Energy-Charts API v2
  * (Fraunhofer ISE), validates them and writes a compact snapshot to
  * public/data/latest.json. Runs in GitHub Actions before every build and
  * can be run locally with `npm run update-data`.
@@ -52,15 +52,16 @@ function datasetSpecs(now) {
   const yesterday = addDays(today, -1);
   const tomorrow = addDays(today, 1);
   return [
-    { key: 'frequency', endpoint: '/v2/frequency', params: { region: 'DE-Freiburg', start: isoSeconds(now - 60 * MINUTE), end: isoSeconds(now) }, decimals: 4, budget: 'default' },
     { key: 'price', endpoint: '/v2/price', params: { bzn: 'DE-LU', start: yesterday, end: tomorrow }, decimals: 2, budget: 'price' },
     { key: 'publicPower', endpoint: '/v2/public_power', params: { country: 'de', start: addDays(today, -2), end: today }, decimals: 1, budget: 'default' },
-    { key: 'signal', endpoint: '/v2/signal', params: { country: 'de' }, decimals: 1, budget: 'signal' },
     { key: 'forecastSolar', endpoint: '/v2/public_power_forecast', params: { country: 'de', production_type: 'solar', forecast_type: 'day-ahead', start: today, end: tomorrow }, decimals: 1, budget: 'default', optional: true },
     { key: 'forecastWindOnshore', endpoint: '/v2/public_power_forecast', params: { country: 'de', production_type: 'wind_onshore', forecast_type: 'day-ahead', start: today, end: tomorrow }, decimals: 1, budget: 'default', optional: true },
     { key: 'forecastWindOffshore', endpoint: '/v2/public_power_forecast', params: { country: 'de', production_type: 'wind_offshore', forecast_type: 'day-ahead', start: today, end: tomorrow }, decimals: 1, budget: 'default', optional: true },
-    { key: 'forecastLoad', endpoint: '/v2/public_power_forecast', params: { country: 'de', production_type: 'load', forecast_type: 'day-ahead', start: today, end: tomorrow }, decimals: 1, budget: 'default', optional: true },
     { key: 'installedPower', endpoint: '/v2/installed_power', params: { country: 'de', time_step: 'monthly' }, decimals: 3, budget: 'default' },
+    // Last on purpose: the rate limits make the whole run take a few minutes, and
+    // the frequency is the one value that should be as fresh as possible. Its time
+    // window is therefore computed right before the request.
+    { key: 'frequency', endpoint: '/v2/frequency', params: (t) => ({ region: 'DE-Freiburg', start: isoSeconds(t - 60 * MINUTE), end: isoSeconds(t) }), decimals: 4, budget: 'default' },
   ];
 }
 
@@ -99,7 +100,7 @@ class Bucket {
     this.pausedUntil = Math.max(this.pausedUntil, Date.now() + ms);
   }
 }
-const BUCKETS = { default: new Bucket(4, 2), price: new Bucket(2, 2), signal: new Bucket(20, 20) };
+const BUCKETS = { default: new Bucket(4, 2), price: new Bucket(2, 2) };
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const log = (...args) => console.log(...args);
@@ -261,12 +262,22 @@ async function main() {
   log(`API: ${API_BASE} · ${specs.length} datasets · output ${path.relative(process.cwd(), OUT_FILE)}`);
 
   for (const spec of specs) {
-    const url = `${API_BASE}${spec.endpoint}?${new URLSearchParams(spec.params)}`;
-    const fetchedAt = Date.now();
-    log(`→ ${spec.key}: ${spec.endpoint} ${JSON.stringify(spec.params)}`);
+    const bucket = BUCKETS[spec.budget] ?? BUCKETS.default;
+    let fetchedAt = Date.now();
+    let params = spec.params;
+    if (typeof params === 'function') {
+      // wait for the request budget first, so the time window ends "now"
+      await bucket.take();
+      bucket.tokens += 1;
+      fetchedAt = Date.now();
+      params = params(fetchedAt);
+    }
+    const resolved = { ...spec, params };
+    const url = `${API_BASE}${spec.endpoint}?${new URLSearchParams(params)}`;
+    log(`→ ${spec.key}: ${spec.endpoint} ${JSON.stringify(params)}`);
     try {
-      const raw = await fetchJson(url, BUCKETS[spec.budget] ?? BUCKETS.default);
-      const ds = encodeDataset(spec, raw, fetchedAt);
+      const raw = await fetchJson(url, bucket);
+      const ds = encodeDataset(resolved, raw, fetchedAt);
       const n = ds.time.count ?? ds.time.timestamps.length;
       datasets[spec.key] = ds;
       log(`  ok – ${ds.series.length} series, ${n} records, until ${ds.availableUntil ?? '–'}`);
@@ -279,7 +290,7 @@ async function main() {
         datasets[spec.key] = { ...prev, error: { status, message } };
         log(`  FAILED (${message}) – keeping previous snapshot from ${prev.fetchedAt}`);
       } else {
-        datasets[spec.key] = { status: 'error', endpoint: spec.endpoint, params: spec.params, fetchedAt: new Date(fetchedAt).toISOString(), error: { status, message } };
+        datasets[spec.key] = { status: 'error', endpoint: spec.endpoint, params, fetchedAt: new Date(fetchedAt).toISOString(), error: { status, message } };
         log(`  FAILED (${message}) – no previous data`);
       }
     }

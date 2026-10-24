@@ -9,7 +9,7 @@ test.describe('with real data (snapshot)', () => {
   test('shows the socket, meters and all sections without errors or sideways scrolling', async ({ page }) => {
     const watcher = watchConsole(page);
     await page.goto('./');
-    await expect(page.getByTestId('verdict')).not.toHaveText(/wärmt sich auf|nicht in Stimmung/);
+    await expect(page.getByTestId('verdict')).not.toHaveText(/beim Aufwärmen|nicht in Stimmung/);
     await expect(page.getByTestId('headline')).not.toBeEmpty();
     await expect(page.getByTestId('truth')).toContainText('Die Wahrheit:');
     await expect(page.getByTestId('quote')).toContainText('„');

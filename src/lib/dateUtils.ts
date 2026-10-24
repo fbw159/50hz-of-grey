@@ -154,6 +154,30 @@ export function formatBerlinTime(epochMs: number, withSeconds = false): string {
   }).format(new Date(epochMs));
 }
 
+/** Wall-clock hour of an instant in Berlin (0–23). */
+export function berlinHour(epochMs: number): number {
+  return zonedParts(epochMs).hour;
+}
+
+/**
+ * "14–15 Uhr" for an hour-long interval. On the night the clocks go back the
+ * hour from 2 to 3 exists twice; those get "(Sommerzeit)" / "(Winterzeit)".
+ * On the night they go forward the interval is "01–03 Uhr" (02 does not exist).
+ */
+export function formatHourRange(start: number, end: number): string {
+  const h = berlinHour(start);
+  let e = berlinHour(end);
+  let note = '';
+  if (berlinHour(start - HOUR) === h) {
+    note = ' (Winterzeit)';
+    e = (h + 1) % 24;
+  } else if (e === h) {
+    note = ' (Sommerzeit)';
+    e = (h + 1) % 24;
+  }
+  return `${pad2(h)}–${e === 0 ? '24' : pad2(e)} Uhr${note}`;
+}
+
 /** "15.10.2026" */
 export function formatBerlinDate(epochMs: number): string {
   return cachedFormatter('date', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(epochMs));

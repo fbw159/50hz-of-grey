@@ -91,7 +91,11 @@ export function buildWeather(datasets: DatasetMap, now: number, limit = 4): Weat
     b.end = t + step;
     const on = windOn.get(t);
     const off = windOff.get(t);
-    if (on !== undefined || off !== undefined) b.wind.push(((on ?? 0) + (off ?? 0)) / 1000);
+    // onshore + offshore only when both forecasts are there (a missing half would
+    // look like a sudden lull); a dataset that failed completely is left out
+    const onOk = on !== undefined || windOn.size === 0;
+    const offOk = off !== undefined || windOff.size === 0;
+    if ((on !== undefined || off !== undefined) && onOk && offOk) b.wind.push(((on ?? 0) + (off ?? 0)) / 1000);
     const s = solar.get(t);
     if (s !== undefined) b.solar.push(s / 1000);
     const p = price.get(t);

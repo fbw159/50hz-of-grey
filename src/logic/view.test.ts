@@ -27,10 +27,10 @@ describe('page view model', () => {
 describe('texts', () => {
   it('has a label, colour and caption for every source', () => {
     for (const id of Object.keys(SOURCES) as (keyof typeof SOURCES)[]) {
-      expect(sourceCaption(id, 5000, 0.2, false).length).toBeGreaterThan(5);
+      expect(sourceCaption(id, 5000, 0.2).length).toBeGreaterThan(5);
     }
-    expect(sourceCaption('solar', 0, 0, true)).toMatch(/dunkel/);
-    expect(sourceCaption('windOnshore', 2000, 0.03, false)).toMatch(/Flaute/);
+    expect(sourceCaption('solar', 0, 0)).toMatch(/dunkel/);
+    expect(sourceCaption('windOnshore', 2000, 0.03)).toMatch(/Flaute/);
   });
 
   it('classifies prices and has jokes for every mood', () => {

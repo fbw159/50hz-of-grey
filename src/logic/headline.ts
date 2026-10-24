@@ -7,7 +7,7 @@
  */
 import type { FrequencyStatus } from './frequency';
 import type { GenerationStatus } from './mix';
-import { eurPerMwhToCtPerKwh, formatNumber, MINUS } from '@/lib/formatters';
+import { eurPerMwhToCtPerKwh, formatCt, formatNumber, MINUS } from '@/lib/formatters';
 import { formatBerlinTime } from '@/lib/dateUtils';
 import { hashString } from '@/lib/timeseries';
 
@@ -37,9 +37,9 @@ function rotate<T>(list: T[], seed: string): T {
 }
 
 function frequencyHeadline(f: FrequencyStatus, slot: string): Headline {
-  const dev = Math.round(f.deviationMilliHz);
+  const dev = f.roundedMilliHz;
   const abs = Math.abs(dev);
-  const hz = formatNumber(f.value, 3);
+  const hz = formatNumber((50_000 + dev) / 1000, 3);
   const mhz = `${abs} Millihertz`;
   const drama = 0.35 + (Math.min(abs, 200) / 200) * 0.65;
   let options: { kicker: string; text: string; highlight: string }[];
@@ -72,18 +72,21 @@ function frequencyHeadline(f: FrequencyStatus, slot: string): Headline {
   }
   const pick = rotate(options, `f-${slot}`);
   let truth: string;
-  if (abs <= 2) truth = `Nur ${abs} mHz neben dem Soll. Erzeugung und Verbrauch sind gerade fast perfekt im Gleichgewicht.`;
+  if (abs === 0) truth = 'Genau 50,000 Hz. Erzeugung und Verbrauch sind gerade perfekt im Gleichgewicht, das schafft das Netz nur selten auf drei Nachkommastellen.';
+  else if (abs <= 2) truth = `Nur ${abs} mHz neben dem Soll. Erzeugung und Verbrauch sind gerade fast perfekt im Gleichgewicht.`;
   else if (abs < 50)
     truth = `${hz} Hz sind völlig normal. Abweichungen bis ±50 mHz sind Alltag, erst bei ±200 mHz arbeitet die gesamte Primärregelleistung Europas.`;
   else if (abs < 200)
     truth = `Das ist eine spürbare Abweichung (${dev > 0 ? '+' : MINUS}${abs} mHz), aber kein Grund zur Sorge. Regelkraftwerke in ganz Europa gleichen gerade automatisch aus.`;
-  else truth = `Das ist selten (${dev > 0 ? '+' : MINUS}${abs} mHz). Jetzt arbeitet die gesamte Primärregelleistung Europas. Erst bei 49,0 Hz würden automatisch Verbraucher abgeschaltet.`;
+  else if (dev < 0)
+    truth = `Das ist selten (${MINUS}${abs} mHz). Jetzt arbeitet die gesamte Primärregelleistung Europas. Erst ab 49,0 Hz würden automatisch Verbraucher abgeschaltet.`;
+  else truth = `Das ist selten (+${abs} mHz): viel zu viel Strom im Netz. Jetzt arbeitet die gesamte Primärregelleistung Europas, und ab 50,2 Hz drosseln Solaranlagen automatisch ihre Leistung.`;
   return { topic: 'frequency', ...pick, truth, drama };
 }
 
 function priceHeadline(eurMwh: number, slot: string): Headline | null {
   const ct = eurPerMwhToCtPerKwh(eurMwh);
-  const ctText = `${ct < 0 ? MINUS : ''}${formatNumber(Math.abs(ct), 1)} ct`;
+  const ctText = formatCt(ct);
   if (eurMwh < 0) {
     const pick = rotate(
       [
@@ -135,7 +138,10 @@ function shareHeadline(g: GenerationStatus): Headline | null {
       text: `${pct} Öko-Strom – Kohle beleidigt!`,
       highlight: pct,
       drama: 0.6,
-      truth: `${pct} des Verbrauchs kamen um ${time} Uhr aus Wind, Sonne, Biomasse und Wasser. An windigen, sonnigen Tagen passiert das immer öfter.`,
+      truth:
+        share > 100
+          ? `Um ${time} Uhr lieferten Wind, Sonne, Biomasse und Wasser mehr Strom, als Deutschland verbraucht hat (${pct} des Verbrauchs). Der Überschuss geht ins Ausland oder in Speicher.`
+          : `${pct} des Verbrauchs kamen um ${time} Uhr aus Wind, Sonne, Biomasse und Wasser. An windigen, sonnigen Tagen passiert das immer öfter.`,
     };
   }
   if (share <= 25) {

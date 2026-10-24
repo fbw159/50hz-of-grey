@@ -8,7 +8,7 @@ import type { Dataset, DatasetKey } from '@/types/data';
 import { buildView } from './view';
 import { nextHours } from './price';
 import { blockLabel } from './weather';
-import { berlinDayKey, formatBerlinTime, startOfBerlinDay } from '@/lib/dateUtils';
+import { berlinDayKey, formatBerlinTime, formatHourRange, startOfBerlinDay } from '@/lib/dateUtils';
 
 const Q = 15 * 60_000;
 
@@ -88,5 +88,20 @@ describe('daylight saving switch on 25 October 2026', () => {
     const v = buildView(datasets(Date.UTC(2026, 9, 25, 11)), Date.UTC(2026, 9, 25, 11));
     const labels = v.today!.hours.map((h) => formatBerlinTime(h.start).slice(0, 2));
     expect(labels.slice(0, 5)).toEqual(['00', '01', '02', '02', '03']);
+  });
+
+  it('gives every hour a readable range, the repeated one with summer/winter time', () => {
+    const v = buildView(datasets(Date.UTC(2026, 9, 25, 11)), Date.UTC(2026, 9, 25, 11));
+    const ranges = v.today!.hours.map((h) => formatHourRange(h.start, h.end));
+    expect(ranges.slice(0, 5)).toEqual(['00–01 Uhr', '01–02 Uhr', '02–03 Uhr (Sommerzeit)', '02–03 Uhr (Winterzeit)', '03–04 Uhr']);
+    expect(ranges[ranges.length - 1]).toBe('23–24 Uhr');
+    expect(new Set(ranges).size).toBe(ranges.length);
+  });
+
+  it('labels the spring-forward hour as 01–03 Uhr', () => {
+    // 29 March 2026: 02:00 CET jumps to 03:00 CEST
+    const start = Date.UTC(2026, 2, 29, 0); // 01:00 CET
+    expect(formatHourRange(start, start + 3_600_000)).toBe('01–03 Uhr');
+    expect(formatHourRange(start + 3_600_000, start + 7_200_000)).toBe('03–04 Uhr');
   });
 });

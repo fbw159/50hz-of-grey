@@ -3,20 +3,19 @@ import type { DayView, GridView } from '@/logic/view';
 import { nextHours, priceExtremes, type HourPrice } from '@/logic/price';
 import { priceEquivalents } from '@/logic/convert';
 import { PRICE_TEXT, pick, priceMood } from '@/content/texts';
-import { berlinDayKey, formatBerlinTime, formatBerlinShortDate } from '@/lib/dateUtils';
-import { eurPerMwhToCtPerKwh, formatNumber, MINUS } from '@/lib/formatters';
+import { berlinDayKey, berlinHour, formatBerlinTime, formatBerlinShortDate, formatHourRange } from '@/lib/dateUtils';
+import { eurPerMwhToCtPerKwh, formatCt, formatNumber } from '@/lib/formatters';
 
 const W = 320;
 const H = 140;
 const TOP = 16;
 
-function ct(eurMwh: number, digits = 1): string {
-  return `${formatNumber(eurPerMwhToCtPerKwh(eurMwh), digits)} ct`;
+function ct(eurMwh: number): string {
+  return formatCt(eurPerMwhToCtPerKwh(eurMwh));
 }
 
 function hourLabel(h: HourPrice): string {
-  const end = formatBerlinTime(h.end).slice(0, 2);
-  return `${formatBerlinTime(h.start).slice(0, 2)}–${end === '00' ? '24' : end} Uhr`;
+  return formatHourRange(h.start, h.end);
 }
 
 function quantile(sorted: number[], q: number): number {
@@ -37,7 +36,8 @@ function Bars({ day, now }: { day: DayView; now: number }) {
   const n = day.hours.length;
   const slot = W / n;
   const zero = y(0);
-  const labels = day.hours.filter((_, i) => i % 6 === 0);
+  // axis labels at 00, 06, 12 and 18 Uhr (by wall clock, so DST days stay right)
+  const labels = day.hours.filter((h, i) => berlinHour(h.start) % 6 === 0 && (i === 0 || berlinHour(day.hours[i - 1].start) !== berlinHour(h.start)));
   const nowIndex = day.hours.findIndex((h) => now >= h.start && now < h.end);
 
   return (
@@ -118,7 +118,7 @@ export function PriceCard({ view, now, slot }: { view: GridView; now: number; sl
           <div className="mt-3 flex items-end justify-between gap-3">
             <p className="font-cond leading-none">
               <span className="text-[2.6rem] font-extrabold" data-testid="price-value">
-                {formatNumber(eurPerMwhToCtPerKwh(current.value), 1)}
+                {ct(current.value).replace(' ct', '')}
               </span>
               <span className="ml-1 text-[1.3rem] font-bold">ct/kWh</span>
             </p>
@@ -202,8 +202,7 @@ export function PriceCard({ view, now, slot }: { view: GridView; now: number; sl
 }
 
 function formatPrice(eurMwh: number): string {
-  const v = eurPerMwhToCtPerKwh(eurMwh);
-  return `${v < 0 ? MINUS : ''}${formatNumber(Math.abs(v), 1)} ct/kWh`;
+  return `${ct(eurMwh)}/kWh`;
 }
 
 function moneyCt(ct: number): string {

@@ -77,7 +77,7 @@ export const MOODS: Record<Mood, MoodText> = {
   },
 };
 
-export const LOADING_TEXT = { verdict: 'wärmt sich auf', line: 'Moment, Mr. Grey macht sich noch frisch. Die Daten kommen gleich.' };
+export const LOADING_TEXT = { verdict: 'beim Aufwärmen', line: 'Moment, Mr. Grey macht sich noch frisch. Die Daten kommen gleich.' };
 export const ERROR_TEXT = {
   verdict: 'nicht in Stimmung',
   line: 'Die Datenquelle antwortet gerade nicht. Versuch es gleich nochmal oder schau dir Beispieldaten an.',
@@ -98,7 +98,7 @@ export const SOCKET_POKES = [
   'Du willst Spannung? Ich hab 230 Volt.',
   'Nur mit trockenen Händen, bitte. Ich bin da empfindlich.',
   'Hihi, das kitzelt in der Phase.',
-  'Noch zehnmal und es gibt einen Kurzschluss. Und dann ist die Welt dunkel. Deine Schuld.',
+  'Mach nur so weiter, dann gibt es einen Kurzschluss. Und dann ist die Welt dunkel. Deine Schuld.',
   'Ich habe den Weltuntergang schon dreimal überlebt. Du bist harmlos.',
 ];
 
@@ -206,11 +206,12 @@ export const SOURCES: Record<GenerationCategoryId, SourceInfo> = {
 };
 
 /** One cheeky caption per source, depending on what it is doing right now. */
-export function sourceCaption(id: GenerationCategoryId, mw: number, utilisation: number | null, isNight: boolean): string {
+export function sourceCaption(id: GenerationCategoryId, mw: number, utilisation: number | null): string {
   const gw = mw / 1000;
   switch (id) {
     case 'solar':
-      if (gw < 0.05) return isNight ? 'Schläft. Mit Augenmaske, es ist ja dunkel.' : 'Versteckt sich schüchtern hinter Wolken.';
+      // practically nothing only happens when it is dark (even a grey winter day brings gigawatts)
+      if (gw < 0.05) return 'Schläft. Mit Augenmaske, es ist ja dunkel.';
       if (utilisation !== null && utilisation < 0.1) return 'Zeigt sich nur kurz. Ziert sich ein bisschen.';
       if (utilisation !== null && utilisation < 0.3) return 'Wärmt ordentlich auf.';
       return 'Gibt alles. Sonnencreme nicht vergessen, es wird heiß.';
@@ -233,7 +234,7 @@ export function sourceCaption(id: GenerationCategoryId, mw: number, utilisation:
     case 'pumpedStorage':
       return gw > 2 ? 'Lässt das Wasser bergab rauschen und macht Strom draus.' : 'Hält sich zurück und spart es sich für später auf.';
     case 'other':
-      return 'Müll, Öl und Grubengas. Die Schmuddelecke des Strommixes.';
+      return 'Müll, Öl, Kohlegase und Krümel. Die Schmuddelecke des Strommixes.';
   }
 }
 
@@ -377,7 +378,7 @@ export const CULPRITS_HIGH = [
 ];
 
 export function blameTruth(deviationMilliHz: number): string {
-  if (Math.abs(deviationMilliHz) < 2) return 'In Wahrheit: Erzeugung und Verbrauch sind gerade fast perfekt im Gleichgewicht. Niemand ist schuld. Wie langweilig.';
+  if (Math.abs(deviationMilliHz) <= 2) return 'In Wahrheit: Erzeugung und Verbrauch sind gerade fast perfekt im Gleichgewicht. Niemand ist schuld. Wie langweilig.';
   return deviationMilliHz < 0
     ? 'In Wahrheit: In ganz Kontinentaleuropa wird gerade ein kleines bisschen mehr Strom verbraucht als erzeugt. Dann sinkt die Frequenz, und die Regelreserve gleicht automatisch aus.'
     : 'In Wahrheit: In ganz Kontinentaleuropa wird gerade ein kleines bisschen mehr Strom erzeugt als verbraucht. Dann steigt die Frequenz, und die Regelreserve gleicht automatisch aus.';
@@ -408,15 +409,18 @@ export function weatherLine(b: WeatherBlock): string {
     case 'sunny':
       return `Sonnig! Solarstrom bis ${gw(b.solarMaxGw)} GW. Sonnenbrille auf, Börsenpreis runter.`;
     case 'cloudy':
-      return `Heiter bis wolkig, Solarstrom bis ${gw(b.solarMaxGw)} GW, dazu ${gw(b.windGw)} GW Wind.`;
+      return `Heiter bis wolkig, Solarstrom bis ${gw(b.solarMaxGw)} GW${b.windGw !== null ? `, dazu ${gw(b.windGw)} GW Wind` : ''}.`;
     case 'flaute':
       return `Dunkelflaute-Gefahr: nur ${gw(b.windGw)} GW Wind${b.solarGw !== null && b.solarGw >= 0.5 ? ` und ${gw(b.solarGw)} GW Sonne` : ''}. Gas und Kohle ziehen schon mal die Jacke an.`;
     case 'night':
-      return b.windGw !== null && b.windGw >= 15
+      if (b.windGw === null) return 'Es ist dunkel (Überraschung!). Die Solaranlagen haben Feierabend.';
+      return b.windGw >= 15
         ? `Dunkel, aber windig: im Schnitt ${gw(b.windGw)} GW Windstrom. Die Windräder machen Nachtschicht.`
         : `Es ist dunkel (Überraschung!) und eher ruhig: im Schnitt ${gw(b.windGw)} GW Wind.`;
-    case 'mixed':
-      return `Durchwachsen: ${gw(b.windGw)} GW Wind, ${gw(b.solarGw)} GW Sonne. Von allem ein bisschen.`;
+    case 'mixed': {
+      const parts = [b.windGw !== null ? `${gw(b.windGw)} GW Wind` : null, b.solarGw !== null ? `${gw(b.solarGw)} GW Sonne` : null].filter(Boolean);
+      return `Durchwachsen: ${parts.join(', ')}. Von allem ein bisschen.`;
+    }
     case 'unknown':
       return 'Der Wetterfrosch ist noch im Urlaub: Für diese Zeit gibt es noch keine Wind- und Solarprognose.';
   }

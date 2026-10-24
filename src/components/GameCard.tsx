@@ -9,6 +9,8 @@ import { formatNumber } from '@/lib/formatters';
 import { Seg } from './Meters';
 import { SocketFace, type FaceMood } from './SocketFace';
 
+const secondsText = (n: number) => (n === 1 ? '1 Sekunde' : `${n} Sekunden`);
+
 const SPAN = 0.25; // scale shows 49,75 … 50,25 Hz
 
 function pos(f: number): number {
@@ -89,7 +91,7 @@ export function GameCard() {
     const text =
       g.status === 'won'
         ? `Ich habe das Stromnetz ${GAME_DURATION_S} Sekunden lang bei 50 Hz gehalten, ohne die Kontrolle zu verlieren. Titel: ${rank.title}. Hältst du die Spannung auch so lange?`
-        : `Ich habe das Stromnetz ${Math.floor(g.t)} Sekunden lang bei Laune gehalten. Titel: ${rank.title}. Kannst du das länger?`;
+        : `Ich habe das Stromnetz ${secondsText(Math.floor(g.t))} lang bei Laune gehalten. Titel: ${rank.title}. Kannst du das länger?`;
     const r = await shareText('Halt die 50 Hz!', text, `${appUrl()}#spiel`);
     if (r === 'copied') showToast('Ergebnis kopiert. Jetzt einfügen und ein bisschen angeben.');
     if (r === 'failed') showToast('Teilen hat nicht geklappt.');
@@ -124,7 +126,7 @@ export function GameCard() {
             </button>
             {best && (
               <span className="fine" data-testid="game-best">
-                Dein Rekord: {best.won ? 'geschafft' : `${best.seconds} Sekunden`}
+                Dein Rekord: {best.won ? 'geschafft' : secondsText(best.seconds)}
               </span>
             )}
           </div>
@@ -179,7 +181,7 @@ export function GameCard() {
                 <span aria-hidden="true">{game.event.emoji} </span>
                 {game.event.text}{' '}
                 <strong className="whitespace-nowrap">
-                  {game.event.gwScaled > 0 ? `Es fehlen ${game.event.gwScaled} GW.` : `${Math.abs(game.event.gwScaled)} GW zu viel.`}
+                  {game.event.gwScaled > 0 ? `Es ${game.event.gwScaled === 1 ? 'fehlt' : 'fehlen'} ${game.event.gwScaled} GW.` : `${Math.abs(game.event.gwScaled)} GW zu viel.`}
                 </strong>
               </>
             ) : (
@@ -216,7 +218,7 @@ function Result({ game, onAgain, onShare }: { game: GameState; onAgain: () => vo
       <p className="mt-1">{rank.text}</p>
       {loss && <p className="fine mt-2">{loss}</p>}
       <p className="fine mt-2">
-        {Math.floor(game.t)} Sekunden durchgehalten, davon {formatNumber(calm, 0)} % im grünen Bereich, {game.taps} Mal gedrückt.
+        {secondsText(Math.floor(game.t))} durchgehalten, davon {formatNumber(calm, 0)} % im grünen Bereich, {game.taps === 0 ? 'kein einziges Mal' : game.taps === 1 ? 'einmal' : `${game.taps}-mal`} gedrückt.
       </p>
       <div className="mt-4 flex flex-wrap gap-2">
         <button type="button" className="btn btn-yellow" onClick={onAgain} data-testid="game-again">

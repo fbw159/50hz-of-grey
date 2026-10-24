@@ -20,7 +20,21 @@ function nf(min: number, max: number): Intl.NumberFormat {
 /** de-DE formatting with a typographic minus. */
 export function formatNumber(value: number | null | undefined, digits = 1, minDigits = digits): string {
   if (value === null || value === undefined || !Number.isFinite(value)) return '–';
-  return nf(minDigits, digits).format(value).replace('-', MINUS);
+  const text = nf(minDigits, digits).format(value);
+  // −0,0 is not a number anyone wants to read: values that round to zero lose their sign
+  if (text.startsWith('-') && /^-[0.,]+$/.test(text)) return text.slice(1);
+  return text.replace('-', MINUS);
+}
+
+/**
+ * ct/kWh with a sign. Tiny non-zero prices (e.g. −0,01 €/MWh) keep enough
+ * decimals so a negative price never shows as "0,0 ct".
+ */
+export function formatCt(ct: number, digits = 1): string {
+  const abs = Math.abs(ct);
+  const d = abs > 0 && abs < 0.05 ? 3 : digits;
+  const text = formatNumber(abs, d);
+  return `${ct < 0 && /[1-9]/.test(text) ? MINUS : ''}${text} ct`;
 }
 
 export function mwToGw(mw: number): number {

@@ -6,8 +6,8 @@ import { showToast } from '@/hooks/useToast';
 import { buildView, slotOf, type GridView } from '@/logic/view';
 import { INDEX_NAME, MOODS } from '@/content/texts';
 import { doomClockTime } from '@/logic/panic';
-import { berlinDayKey, formatBerlinTime } from '@/lib/dateUtils';
-import { eurPerMwhToCtPerKwh, formatNumber } from '@/lib/formatters';
+import { berlinDayKey, formatBerlinDateTime, formatBerlinTime, isSameBerlinDay } from '@/lib/dateUtils';
+import { eurPerMwhToCtPerKwh, formatCt, formatNumber } from '@/lib/formatters';
 import { appUrl } from '@/lib/clipboard';
 import { shareText } from '@/lib/share';
 import { Header } from '@/components/Header';
@@ -28,7 +28,7 @@ import { KillSwitch } from '@/components/KillSwitch';
 function shareSummary(view: GridView): string {
   const parts: string[] = [];
   if (view.frequency) parts.push(`${formatNumber(view.frequency.value, 3)} Hz`);
-  if (view.price?.current) parts.push(`Börsenstrom ${formatNumber(eurPerMwhToCtPerKwh(view.price.current.value), 1)} ct/kWh`);
+  if (view.price?.current) parts.push(`Börsenstrom ${formatCt(eurPerMwhToCtPerKwh(view.price.current.value))}/kWh`);
   if (view.generation?.renewableShareOfLoad != null) parts.push(`${formatNumber(view.generation.renewableShareOfLoad, 0)} % Öko-Strom`);
   const head = view.headline
     ? `${view.headline.kicker}: ${view.headline.text}`
@@ -78,17 +78,19 @@ export default function App() {
               <>
                 <FrontPage view={view} status={data.status} slot={slot} onRetry={() => void refreshGridData()} onDemo={() => setDemoMode(true)} />
                 <Meters view={view} />
-                {!demo && data.snapshotFetchedAt && (
+                {!demo && data.snapshotFetchedAt ? (
                   <p className="px-1 text-center text-[0.8125rem] text-ink-2" data-testid="data-age">
-                    {data.offline ? 'Offline. ' : ''}Echte Messwerte, zuletzt abgeholt um {formatBerlinTime(data.snapshotFetchedAt)} Uhr.
+                    {data.offline ? 'Offline. ' : ''}Echte Messwerte, zuletzt abgeholt{' '}
+                    {isSameBerlinDay(data.snapshotFetchedAt, now) ? `um ${formatBerlinTime(data.snapshotFetchedAt)} Uhr` : `am ${formatBerlinDateTime(data.snapshotFetchedAt)} Uhr`}.
                   </p>
-                )}
+                ) : null}
                 <KillSwitch />
               </>
             );
-            const netzTv = <NetzTv view={view} slot={slot} />;
+            // a new snapshot restarts the replay from the beginning
+            const netzTv = <NetzTv key={view.ekg?.to ?? 0} view={view} slot={slot} />;
             const price = <PriceCard view={view} now={now} slot={slot} />;
-            const mix = <MixCard view={view} />;
+            const mix = <MixCard view={view} now={now} />;
             const weather = <WeatherCard view={view} now={now} />;
             const game = <GameCard />;
             const profile = <ProfileCard />;

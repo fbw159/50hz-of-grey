@@ -35,7 +35,7 @@ type Listener = () => void;
 
 const SNAPSHOT_REFRESH_MS = 5 * MINUTE;
 const LIVE_TICK_MS = 30_000;
-const LIVE_ORDER: DatasetKey[] = ['frequency', 'price', 'publicPower', 'signal', 'forecastSolar', 'forecastWindOnshore', 'forecastWindOffshore', 'forecastLoad', 'installedPower'];
+const LIVE_ORDER: DatasetKey[] = ['price', 'publicPower', 'forecastSolar', 'forecastWindOnshore', 'forecastWindOffshore', 'installedPower', 'frequency'];
 
 /** Resolve the base URL for direct API requests (undefined = not available). */
 export function resolveLiveBaseUrl(env: ImportMetaEnv = import.meta.env): string | undefined {

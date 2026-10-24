@@ -1,5 +1,5 @@
 import type { GridView } from '@/logic/view';
-import { eurPerMwhToCtPerKwh, formatNumber } from '@/lib/formatters';
+import { eurPerMwhToCtPerKwh, formatCt, formatNumber } from '@/lib/formatters';
 
 /** 7-segment number with unlit "8"s behind it. Uses "." as on real meters. */
 export function Seg({ text, className = '' }: { text: string; className?: string }) {
@@ -15,7 +15,9 @@ export type Led = 'ok' | 'warn' | 'alarm' | 'off';
 const LED_COLOR: Record<Led, string> = { ok: '#3f9b55', warn: '#f2a900', alarm: '#c8392b', off: '#9aa09b' };
 
 function segPrice(ct: number): string {
-  if (Math.abs(ct) < 0.05) return '0.0'; // no "-0.0"
+  if (ct === 0) return '0.0';
+  // tiny prices keep their sign: a negative price must never look like zero
+  if (Math.abs(ct) < 0.05) return ct < 0 ? `-${Math.abs(ct).toFixed(2)}` : ct.toFixed(2);
   return Math.abs(ct) >= 100 ? Math.round(ct).toString() : ct.toFixed(1);
 }
 
@@ -57,7 +59,7 @@ export function Meters({ view }: { view: GridView }) {
 
   const fLed: Led = !f || f.stale ? 'off' : Math.abs(f.deviationMilliHz) < 50 ? 'ok' : Math.abs(f.deviationMilliHz) < 100 ? 'warn' : 'alarm';
   const pLed: Led = p === null ? 'off' : p < 150 ? 'ok' : p < 250 ? 'warn' : 'alarm';
-  const sLed: Led = share === null ? 'off' : share >= 60 ? 'ok' : share >= 35 ? 'warn' : 'alarm';
+  const sLed: Led = share === null || view.generation?.stale ? 'off' : share >= 60 ? 'ok' : share >= 35 ? 'warn' : 'alarm';
   const ct = p === null ? null : eurPerMwhToCtPerKwh(p);
 
   return (
@@ -67,7 +69,7 @@ export function Meters({ view }: { view: GridView }) {
         href="#ekg"
         label="Netzfrequenz"
         unit="Hz"
-        seg={f ? f.value.toFixed(3) : '--.---'}
+        seg={f ? ((50_000 + f.roundedMilliHz) / 1000).toFixed(3) : '--.---'}
         spoken={f ? `${formatNumber(f.value, 3)} Hertz` : 'keine Daten'}
         led={fLed}
         testId="meter-frequency"
@@ -77,7 +79,7 @@ export function Meters({ view }: { view: GridView }) {
         label="Börsenstrom"
         unit="ct/kWh"
         seg={ct === null ? '--.-' : segPrice(ct)}
-        spoken={ct === null ? 'keine Daten' : `${formatNumber(ct, 1)} Cent pro Kilowattstunde`}
+        spoken={ct === null ? 'keine Daten' : `${formatCt(ct).replace(' ct', '').replace('−', 'minus ')} Cent pro Kilowattstunde`}
         led={pLed}
         testId="meter-price"
       />

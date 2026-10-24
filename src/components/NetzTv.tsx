@@ -23,8 +23,8 @@ function ekgPath(samples: Sample[], from: number, to: number, half: number): str
   return d;
 }
 
-function devText(mhz: number): string {
-  const d = Math.round(mhz);
+/** "+12 mHz" – expects whole mHz. */
+function devText(d: number): string {
   return `${d > 0 ? '+' : d < 0 ? MINUS : '±'}${Math.abs(d)} mHz`;
 }
 
@@ -51,11 +51,11 @@ export function NetzTv({ view, slot }: { view: GridView; slot: string }) {
   const half = Math.max(0.06, Math.ceil((maxDev * 1.15) / 0.02) * 0.02);
   const bandY = (H / 2 - 6) * (0.05 / half);
   const play = samples[idx];
-  const playDev = (play.v - 50) * 1000;
+  const playDev = Math.round(play.v * 1000) - 50_000;
   const px = ((play.t - ekg.from) / (ekg.to - ekg.from)) * W;
   const py = H / 2 - ((play.v - 50) / half) * (H / 2 - 6);
 
-  const dev = f.deviationMilliHz;
+  const dev = f.roundedMilliHz;
   const meters = precisionMeters(dev);
   const culprits = dev < 0 ? CULPRITS_LOW : CULPRITS_HIGH;
   const culprit = culprits[(hashString(`blame-${slot}`) + blameSeed) % culprits.length];
@@ -106,8 +106,8 @@ export function NetzTv({ view, slot }: { view: GridView; slot: string }) {
       <div className="mt-3 rounded-xl bg-panel-hi p-3 text-[0.95rem]" data-testid="precision">
         <p className="font-cond text-[1.1rem] font-bold">Auf Deutsch</p>
         <p>
-          Zuletzt lag die Frequenz {formatNumber(Math.abs(dev), 0)} mHz neben dem Soll. Das ist so genau, als würdest du von Hamburg nach München fahren (rund{' '}
-          {HAMBURG_MUNICH_KM} km) und {meters < 1 ? 'auf den Meter genau parken' : `${formatNumber(meters, 0)} Meter neben dem Ziel parken`}.
+          {dev === 0 ? 'Zuletzt lag die Frequenz exakt auf dem Soll.' : `Zuletzt lag die Frequenz ${Math.abs(dev)} mHz neben dem Soll.`} Das ist so genau, als würdest du
+          von Hamburg nach München fliegen (rund {HAMBURG_MUNICH_KM} km Luftlinie) und {meters < 1 ? 'auf den Meter genau landen' : `${formatNumber(meters, 0)} Meter neben dem Ziel landen`}.
         </p>
       </div>
 
@@ -115,10 +115,10 @@ export function NetzTv({ view, slot }: { view: GridView; slot: string }) {
         <p className="font-cond text-[1.25rem] font-bold leading-tight">Wer ist schuld an den {devText(dev)}?</p>
         <p className="mt-1 text-[1.05rem]" aria-live="polite" data-testid="culprit">
           <span aria-hidden="true">🕵️ </span>
-          {Math.abs(dev) < 2 ? 'Niemand. Unerhört.' : `Eindeutig ${culprit}.`}
+          {Math.abs(dev) <= 2 ? 'Niemand. Unerhört.' : `Eindeutig ${culprit}.`}
         </p>
         <p className="fine mt-1">{blameTruth(dev)}</p>
-        {Math.abs(dev) >= 2 && (
+        {Math.abs(dev) > 2 && (
           <button type="button" className="btn mt-2" onClick={() => setBlameSeed((s) => s + 1)} data-testid="blame-next">
             Anderen Schuldigen finden
           </button>

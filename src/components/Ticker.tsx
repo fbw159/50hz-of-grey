@@ -1,19 +1,25 @@
 import type { GridView } from '@/logic/view';
 import { INDEX_NAME, TICKER_FREQUENCY, TICKER_SATIRE } from '@/content/texts';
-import { eurPerMwhToCtPerKwh, formatNumber } from '@/lib/formatters';
+import { eurPerMwhToCtPerKwh, formatCt, formatNumber } from '@/lib/formatters';
 import { hashString } from '@/lib/timeseries';
+import { formatBerlinTime } from '@/lib/dateUtils';
 import { frequencyMood } from '@/logic/panic';
 
 /** Breaking-news ticker: real numbers, absurd headlines. */
 export function Ticker({ view, slot }: { view: GridView; slot: string }) {
   const items: string[] = [];
-  if (view.frequency) items.push(`Netzfrequenz ${formatNumber(view.frequency.value, 3)} Hz: ${TICKER_FREQUENCY[frequencyMood(view.frequency.deviationMilliHz)]}`);
+  if (view.frequency) {
+    const f = view.frequency;
+    // an older measurement carries its time, so nobody mistakes it for "now"
+    const when = f.ageMs > 15 * 60_000 ? ` (um ${formatBerlinTime(f.t)} Uhr)` : '';
+    items.push(`Netzfrequenz ${formatNumber((50_000 + f.roundedMilliHz) / 1000, 3)} Hz${when}: ${TICKER_FREQUENCY[frequencyMood(f.roundedMilliHz)]}`);
+  }
   const price = view.price?.current?.value;
   if (price !== undefined) {
-    const ct = formatNumber(eurPerMwhToCtPerKwh(price), 1);
-    items.push(price < 0 ? `Börsenstrom ${ct} ct/kWh: Strom kostet weniger als nichts, Ökonomen ratlos` : `Börsenstrom ${ct} ct/kWh${price > 200 ? ': Toaster offiziell Luxusgut' : ''}`);
+    const ct = formatCt(eurPerMwhToCtPerKwh(price));
+    items.push(price < 0 ? `Börsenstrom ${ct}/kWh: Strom kostet weniger als nichts, Ökonomen ratlos` : `Börsenstrom ${ct}/kWh${price > 200 ? ': Toaster offiziell Luxusgut' : ''}`);
   }
-  const share = view.generation?.renewableShareOfLoad;
+  const share = view.generation && !view.generation.stale ? view.generation.renewableShareOfLoad : null;
   if (share != null) items.push(`${formatNumber(share, 0)} % Öko-Strom${share >= 70 ? ': Kohlekraftwerk bucht Wellness-Wochenende' : share < 30 ? ': Windräder melden sich krank' : ''}`);
   if (view.panic) items.push(`${INDEX_NAME} ${view.panic.score} von 100`);
   // four absurd headlines, changing every few minutes

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Dataset, NormalizedSeries } from '@/types/data';
-import { getGenerationStatus, getGenerationRows, dailyEnergyGwh, getRecentGenerationRows, getInstalledCapacity, getMixRows } from './mix';
+import { getGenerationStatus, getGenerationRows, dailyEnergyGwh, getRecentGenerationRows, getInstalledCapacity, getMixRows, latestGenerationIndex } from './mix';
 import { startOfBerlinDay } from '@/lib/dateUtils';
 
 const QUARTER = 15 * 60_000;
@@ -111,7 +111,8 @@ describe('installed capacity and mix rows', () => {
     const cap = getInstalledCapacity(installed(118.6, 71.3, 11.4));
     expect(cap.solarGw).toBeCloseTo(118.6);
     expect(cap.windOnshoreGw).toBeCloseTo(71.3);
-    expect(getInstalledCapacity(undefined).solarGw).toBeNull();
+    // without the dataset, rough fallback values keep the captions meaningful
+    expect(getInstalledCapacity(undefined).solarGw).toBe(120);
   });
 
   it('sorts sources by output, computes shares and utilisation, skips missing ones', () => {
@@ -127,3 +128,25 @@ describe('installed capacity and mix rows', () => {
     expect(getMixRows(null, getInstalledCapacity(undefined))).toEqual([]);
   });
 });
+
+describe('newest complete generation record', () => {
+  it('prefers a record where load and share are already there', () => {
+    const ds = pp({ solar: [100, 200, 300], load: [40_000, 41_000, null], renewable_share_of_load: [50, 51, null] });
+    expect(latestGenerationIndex(ds)).toBe(1);
+    const status = getGenerationStatus(ds, ds.timestamps[2] + 1)!;
+    expect(status.renewableShareOfLoad).toBe(51);
+    expect(status.solarMw).toBe(200);
+  });
+
+  it('falls back to the newest record when nothing complete is close', () => {
+    const ds = pp({ solar: [100, ...Array(10).fill(200)], load: [40_000, ...Array(10).fill(null)] });
+    expect(latestGenerationIndex(ds)).toBe(10);
+  });
+
+  it('marks old generation data as stale', () => {
+    const ds = pp({ solar: [100], load: [40_000] });
+    expect(getGenerationStatus(ds, ds.timestamps[0] + 2 * 3_600_000)!.stale).toBe(false);
+    expect(getGenerationStatus(ds, ds.timestamps[0] + 9 * 3_600_000)!.stale).toBe(true);
+  });
+});
+

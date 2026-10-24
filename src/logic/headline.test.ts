@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildHeadline } from './headline';
+import { MINUS } from '@/lib/formatters';
 import type { FrequencyStatus } from './frequency';
 import type { GenerationStatus } from './mix';
 
@@ -10,6 +11,7 @@ function freq(value: number, stale = false): FrequencyStatus {
     ageMs: 0,
     deviationHz: value - 50,
     deviationMilliHz: (value - 50) * 1000,
+    roundedMilliHz: Math.round(value * 1000) - 50_000,
     region: 'DE-Freiburg',
     synchronousArea: 'RG Kontinentaleuropa',
     origin: 'snapshot',
@@ -62,3 +64,36 @@ describe('front-page headline', () => {
     expect(buildHeadline({ frequency: null, priceEurMwh: 90, generation: gen(50) }, '1')).toBeNull();
   });
 });
+
+describe('headline numbers and truths', () => {
+  it('shows the same mHz as the three-decimal Hz value', () => {
+    // a value right on the rounding edge: Hz and mHz must come from the same rounding
+    const f = freq(49.9805);
+    const hz = ((50_000 + f.roundedMilliHz) / 1000).toFixed(3).replace('.', ',');
+    for (let slot = 0; slot < 20; slot++) {
+      const h = buildHeadline({ frequency: f, priceEurMwh: 90, generation: null }, String(slot))!;
+      expect(h.truth).toContain(`${hz} Hz`);
+      if (h.text.includes('Millihertz')) expect(h.text).toContain(`${Math.abs(f.roundedMilliHz)} Millihertz`);
+      else expect(h.text).toContain(hz);
+    }
+  });
+
+  it('explains very high frequencies with the solar cut-back, low ones with load shedding', () => {
+    const high = buildHeadline({ frequency: freq(50.21), priceEurMwh: null, generation: null }, '1')!;
+    expect(high.truth).toMatch(/50,2 Hz/);
+    expect(high.truth).not.toMatch(/49,0/);
+    const low = buildHeadline({ frequency: freq(49.79), priceEurMwh: null, generation: null }, '1')!;
+    expect(low.truth).toMatch(/49,0 Hz/);
+  });
+
+  it('words a renewable share above 100 % correctly', () => {
+    const h = buildHeadline({ frequency: null, priceEurMwh: 60, generation: gen(112) }, '1')!;
+    expect(h.truth).toMatch(/mehr Strom, als Deutschland verbraucht/);
+  });
+
+  it('never shows a tiny negative price as zero', () => {
+    const h = buildHeadline({ frequency: null, priceEurMwh: -0.01, generation: null }, '1')!;
+    expect(h.truth).toContain(`${MINUS}0,001 ct`);
+  });
+});
+

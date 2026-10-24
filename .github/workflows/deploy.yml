@@ -3,15 +3,15 @@ name: Build & Deploy to GitHub Pages
 # Three triggers, one pipeline:
 #  - push to main      → fresh data snapshot + build + deploy
 #  - manual dispatch   → same
-#  - schedule (5 min)  → data refresh (GitHub starts scheduled runs late under
-#                        load, so we ask often to get fresh data reasonably often): the Energy-Charts API does not allow
+#  - schedule (5 min)  → data refresh. The Energy-Charts API does not allow
 #                        browser requests from other origins (CORS) and is
 #                        rate-limited, so the runner fetches the data and the
-#                        site is re-published with the new snapshot.
+#                        site is re-published with the new snapshot. GitHub
+#                        starts scheduled runs late under load, so we ask often.
 #
 # Nothing is committed back to the repository – the snapshot only lives in the
-# deployed artifact. The committed public/data/latest.json is the fallback that
-# is used if the fetch fails (the app then shows the older timestamp).
+# deployed site. Each run first restores the published snapshot, so datasets
+# that fail to load keep their last good values (with their real timestamps).
 
 on:
   push:
@@ -19,6 +19,8 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '*/5 * * * *'
+    # once a day, additionally keeps the schedule alive (see the keepalive job)
+    - cron: '17 3 * * *'
 
 permissions:
   contents: read
@@ -35,6 +37,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    outputs:
+      deploy: ${{ steps.check.outputs.deploy }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -56,25 +60,45 @@ jobs:
           echo "BASE_PATH=${BASE_PATH}" >> "$GITHUB_ENV"
           echo "Base path: ${BASE_PATH}"
 
+      - name: Restore the last published snapshot
+        # Nothing is committed back to the repository, so the last good data lives
+        # only on the published site. The update script keeps every dataset from it
+        # that fails to load this time (the app then shows the older timestamp).
+        continue-on-error: true
+        run: |
+          URL="https://${GITHUB_REPOSITORY_OWNER}.github.io${BASE_PATH}data/latest.json"
+          curl -fsSL --retry 2 --max-time 30 "$URL" -o /tmp/previous.json && mv /tmp/previous.json public/data/latest.json && echo "restored $URL" || echo "no previous snapshot"
+
       - name: Fetch data snapshot from Energy-Charts
-        # Paced to the API's rate limits (~2–3 minutes). If it fails, the committed snapshot is used.
+        # Paced to the API's rate limits (about 2 minutes).
         continue-on-error: true
         run: node scripts/update-data.mjs
+
+      - name: Check snapshot
+        id: check
+        # A scheduled run without any usable data must not overwrite the live site.
+        run: |
+          OK=$(node -e "const s=require('./public/data/latest.json');console.log(Object.values(s.datasets||{}).filter(d=>d.status==='ok').length)")
+          echo "datasets ok: $OK"
+          if [ "$OK" = "0" ] && [ "${{ github.event_name }}" = "schedule" ]; then echo "deploy=false" >> "$GITHUB_OUTPUT"; else echo "deploy=true" >> "$GITHUB_OUTPUT"; fi
 
       - name: Unit tests
         if: github.event_name != 'schedule'
         run: npm test
 
       - name: Build
+        if: steps.check.outputs.deploy == 'true'
         run: npm run build
 
       - name: Upload Pages artifact
+        if: steps.check.outputs.deploy == 'true'
         uses: actions/upload-pages-artifact@v3
         with:
           path: dist
 
   deploy:
     needs: build
+    if: needs.build.outputs.deploy == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment:
@@ -84,3 +108,19 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  keepalive:
+    # GitHub switches scheduled workflows off after 60 days without repository
+    # activity. Re-enabling the workflow once a day through the API keeps the
+    # data updates running.
+    if: github.event_name == 'schedule' && github.event.schedule == '17 3 * * *'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    permissions:
+      actions: write
+    steps:
+      - name: Keep the schedule alive
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X PUT "repos/${GITHUB_REPOSITORY}/actions/workflows/deploy.yml/enable" && echo "workflow re-enabled"

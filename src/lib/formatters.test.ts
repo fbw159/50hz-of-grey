@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { eurPerMwhToCtPerKwh, formatCtPerKwh, formatHz, formatMilliHz, formatNumber, formatPower, formatPrice, gwToMw, mwToGw, MINUS, NBSP } from './formatters';
+import { eurPerMwhToCtPerKwh, formatCt, formatCtPerKwh, formatHz, formatMilliHz, formatNumber, formatPower, formatPrice, gwToMw, mwToGw, MINUS, NBSP } from './formatters';
 
 describe('unit conversions', () => {
   it('converts MW ↔ GW', () => {
@@ -46,5 +46,21 @@ describe('formatting (de-DE)', () => {
     expect(formatMilliHz(-0.013)).toBe(`${MINUS}13${NBSP}mHz`);
     expect(formatMilliHz(0.0124)).toBe(`+12${NBSP}mHz`);
     expect(formatMilliHz(0)).toBe(`±0${NBSP}mHz`);
+  });
+});
+
+describe('no negative zero, no hidden negative prices', () => {
+  it('drops the sign of values that round to zero', () => {
+    expect(formatNumber(-0.04, 1)).toBe('0,0');
+    expect(formatNumber(-0.4, 0)).toBe('0');
+    expect(formatNumber(-0.06, 1)).toBe(`${MINUS}0,1`);
+  });
+
+  it('keeps tiny negative prices visibly negative', () => {
+    expect(formatCt(-0.001)).toBe(`${MINUS}0,001 ct`);
+    expect(formatCt(-0.03)).toBe(`${MINUS}0,030 ct`);
+    expect(formatCt(-0.05)).toBe(`${MINUS}0,1 ct`);
+    expect(formatCt(0)).toBe('0,0 ct');
+    expect(formatCt(8.53)).toBe('8,5 ct');
   });
 });

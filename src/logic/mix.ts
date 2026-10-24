@@ -82,6 +82,8 @@ export interface GenerationStatus {
   pumpedStorageConsumptionMw: number | null;
   /** PV change over the last hour in MW (null if not computable). */
   solarChange1hMw: number | null;
+  /** Older than GENERATION_STALE_AFTER_MS. */
+  stale: boolean;
   origin: Dataset['origin'];
   license: string | null;
 }
@@ -94,14 +96,31 @@ export function categoryValueAt(ds: Dataset, cat: GenerationCategory, index: num
   return sumAt(seriesFor(ds, cat.seriesIds), index);
 }
 
-/** Index of the newest record that has a real generation value (solar OR wind present). */
+/**
+ * Index of the newest record that has a real generation value (solar OR wind
+ * present). The newest quarter hours sometimes arrive before the load and the
+ * renewable share; then a slightly older but complete record is preferred
+ * (up to two hours back), so the share and the mix belong to the same time.
+ */
 export function latestGenerationIndex(ds: Dataset): number {
   const solar = getSeries(ds, 'solar');
   const wind = getSeries(ds, 'wind_onshore');
   const i = Math.max(lastValidIndex(solar?.values ?? []), lastValidIndex(wind?.values ?? []));
-  if (i >= 0) return i;
-  return ds.timestamps.length - 1;
+  if (i < 0) return ds.timestamps.length - 1;
+  const share = getSeries(ds, RENEWABLE_SHARE_OF_LOAD_ID);
+  const load = getSeries(ds, LOAD_SERIES_ID);
+  if (!share && !load) return i;
+  const has = (s: NormalizedSeries | undefined, j: number) => !s || (s.values[j] !== null && s.values[j] !== undefined);
+  const generation = (j: number) => has(solar, j) || has(wind, j);
+  const limit = ds.timestamps[i] - 2 * HOUR;
+  for (let j = i; j >= 0 && ds.timestamps[j] >= limit; j--) {
+    if (generation(j) && has(share, j) && has(load, j)) return j;
+  }
+  return i;
 }
+
+/** Generation data older than this no longer counts as "now" (headline, index). */
+export const GENERATION_STALE_AFTER_MS = 8 * HOUR;
 
 export function getGenerationStatus(ds: Dataset | undefined, now: number): GenerationStatus | null {
   if (!ds || ds.timestamps.length === 0) return null;
@@ -152,6 +171,7 @@ export function getGenerationStatus(ds: Dataset | undefined, now: number): Gener
     netImportMw: valueAt(getSeries(ds, CROSS_BORDER_TRADING_ID), index),
     pumpedStorageConsumptionMw: valueAt(getSeries(ds, PUMPED_CONSUMPTION_ID), index),
     solarChange1hMw,
+    stale: now - ds.timestamps[index] > GENERATION_STALE_AFTER_MS,
     origin: ds.origin,
     license: ds.license,
   };
@@ -244,6 +264,12 @@ export interface InstalledCapacity {
   windOffshoreGw: number | null;
 }
 
+/**
+ * Rough installed capacities in Germany (autumn 2026), only used to choose
+ * the captions ("Bläst so mittel") when the installed-power dataset is missing.
+ */
+export const FALLBACK_CAPACITY: InstalledCapacity = { solarGw: 120, windOnshoreGw: 72, windOffshoreGw: 11.5 };
+
 /** Newest installed capacities in GW. Units are declared per series by the API. */
 export function getInstalledCapacity(ds: Dataset | undefined): InstalledCapacity {
   const toGw = (id: string): number | null => {
@@ -255,7 +281,11 @@ export function getInstalledCapacity(ds: Dataset | undefined): InstalledCapacity
     const unit = (s.unit || ds.unit || 'GW').toUpperCase();
     return unit.startsWith('MW') ? raw / 1000 : unit.startsWith('KW') ? raw / 1e6 : raw;
   };
-  return { solarGw: toGw('solar_ac'), windOnshoreGw: toGw('wind_onshore'), windOffshoreGw: toGw('wind_offshore') };
+  return {
+    solarGw: toGw('solar_ac') ?? FALLBACK_CAPACITY.solarGw,
+    windOnshoreGw: toGw('wind_onshore') ?? FALLBACK_CAPACITY.windOnshoreGw,
+    windOffshoreGw: toGw('wind_offshore') ?? FALLBACK_CAPACITY.windOffshoreGw,
+  };
 }
 
 export interface MixRow {

@@ -51,13 +51,14 @@ export function buildView(datasets: DatasetMap, now: number): GridView {
   const price = getPriceOverview(datasets.price, now);
   const generation = getGenerationStatus(datasets.publicPower, now);
   const mix = getMixRows(generation, getInstalledCapacity(datasets.installedPower));
+  // stale measurements don't count as "current"
+  const freshGeneration = generation && !generation.stale ? generation : null;
   const panic = computePanic({
-    // stale measurements don't count as "current"
     deviationMilliHz: frequency && !frequency.stale ? frequency.deviationMilliHz : null,
     priceEurMwh: price?.current?.value ?? null,
-    renewableSharePct: generation?.renewableShareOfLoad ?? null,
+    renewableSharePct: freshGeneration?.renewableShareOfLoad ?? null,
   });
-  const headline = buildHeadline({ frequency, priceEurMwh: price?.current?.value ?? null, generation }, slotOf(now));
+  const headline = buildHeadline({ frequency, priceEurMwh: price?.current?.value ?? null, generation: freshGeneration }, slotOf(now));
   return {
     frequency,
     ekg: getFrequencyWindow(datasets.frequency, 10, 700),

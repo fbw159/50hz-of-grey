@@ -1,7 +1,7 @@
 {
   "name": "50hz-of-grey",
   "private": true,
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "50 Hz of Grey – Wie geht's dem Stromnetz? Echte Netzdaten, erklärt von einer Steckdose mit Gefühlen.",
   "type": "module",
   "license": "MIT",

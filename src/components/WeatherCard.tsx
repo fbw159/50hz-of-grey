@@ -1,11 +1,7 @@
 import type { GridView } from '@/logic/view';
 import { blockLabel } from '@/logic/weather';
 import { WEATHER_EMOJI, weatherLine } from '@/content/texts';
-import { formatNumber, MINUS } from '@/lib/formatters';
-
-function ct(v: number): string {
-  return `${v < 0 ? MINUS : ''}${formatNumber(Math.abs(v), 1)} ct`;
-}
+import { formatCt as ct } from '@/lib/formatters';
 
 /** The grid weather report: real day-ahead forecasts, presented like TV weather. */
 export function WeatherCard({ view, now }: { view: GridView; now: number }) {

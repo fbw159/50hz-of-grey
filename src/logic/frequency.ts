@@ -20,6 +20,11 @@ export interface FrequencyStatus {
   /** f − 50 Hz in Hz. */
   deviationHz: number;
   deviationMilliHz: number;
+  /**
+   * Deviation in whole mHz, consistent with the value shown with three
+   * decimals (49,981 Hz ↔ −19 mHz). Use this for every text.
+   */
+  roundedMilliHz: number;
   /** Measurement meta from the dataset. */
   region: string;
   synchronousArea: string;
@@ -48,6 +53,7 @@ export function getFrequencyStatus(ds: Dataset | undefined, now: number): Freque
     ageMs: now - last.t,
     deviationHz,
     deviationMilliHz: deviationHz * 1000,
+    roundedMilliHz: Math.round(last.v * 1000) - NOMINAL_FREQUENCY * 1000,
     region,
     synchronousArea: 'RG Kontinentaleuropa',
     origin: ds.origin,
