@@ -30,7 +30,7 @@ Netzfrequenz (Sekundenwerte, gemessen in Freiburg), Day-Ahead-Preis DE-LU, öffe
 
 Die API erlaubt keine direkten Abrufe aus fremden Webseiten (CORS). Deshalb holt ein **GitHub-Actions-Workflow** die Daten regelmäßig ab
 (`scripts/update-data.mjs`, im Takt der API-Limits), legt sie als `data/latest.json` neben die Seite und veröffentlicht neu.
-GitHub startet geplante Läufe nicht exakt (angefragt: alle 5 Minuten); in der Praxis kommen neue Werte meist alle 30 bis 60 Minuten.
+GitHub startet geplante Läufe nicht exakt und drosselt häufige Zeitpläne stark (angefragt: alle 5 Minuten); in der Praxis kommen neue Werte meist alle zwei bis vier Stunden.
 Jeder Lauf übernimmt zuerst den zuletzt veröffentlichten Snapshot: Schlägt ein Abruf fehl, bleiben die alten Werte (mit ihrer echten Uhrzeit) stehen.
 Ein geplanter Lauf ganz ohne Daten veröffentlicht nichts. Weil GitHub geplante Workflows nach 60 Tagen ohne Repo-Aktivität abschaltet, schaltet sich der Workflow einmal täglich selbst wieder an.
 

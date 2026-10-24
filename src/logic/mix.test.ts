@@ -146,7 +146,8 @@ describe('newest complete generation record', () => {
   it('marks old generation data as stale', () => {
     const ds = pp({ solar: [100], load: [40_000] });
     expect(getGenerationStatus(ds, ds.timestamps[0] + 2 * 3_600_000)!.stale).toBe(false);
-    expect(getGenerationStatus(ds, ds.timestamps[0] + 9 * 3_600_000)!.stale).toBe(true);
+    expect(getGenerationStatus(ds, ds.timestamps[0] + 9 * 3_600_000)!.stale).toBe(false);
+    expect(getGenerationStatus(ds, ds.timestamps[0] + 11 * 3_600_000)!.stale).toBe(true);
   });
 });
 

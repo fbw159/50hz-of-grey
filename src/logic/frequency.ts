@@ -36,11 +36,12 @@ export interface FrequencyStatus {
 }
 
 /**
- * The snapshot is refreshed by GitHub Actions, which in practice runs every
- * 30–60 minutes (sometimes longer at night). A measurement only stops counting
- * as "current" after three hours; until then it is shown with its age.
+ * The snapshot is refreshed by scheduled GitHub Actions runs. GitHub throttles
+ * frequent schedules heavily: in practice a run starts every two to five hours.
+ * A measurement only stops counting as "current" after six hours; until then
+ * it is shown with its time and age.
  */
-export const FREQUENCY_STALE_AFTER_MS = 3 * 60 * MINUTE;
+export const FREQUENCY_STALE_AFTER_MS = 6 * 60 * MINUTE;
 
 export function getFrequencyStatus(ds: Dataset | undefined, now: number): FrequencyStatus | null {
   const last = lastValid(ds, FREQUENCY_SERIES_ID);

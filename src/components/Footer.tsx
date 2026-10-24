@@ -10,7 +10,7 @@ export function Footer() {
         <a className="underline" href="https://www.energy-charts.info" target="_blank" rel="noreferrer">
           Energy-Charts
         </a>{' '}
-        vom Fraunhofer ISE, Lizenz CC BY 4.0. Die Seite holt sich die Werte regelmäßig neu, meist alle 30 bis 60 Minuten. Jeder Wert zeigt, wann er gemessen wurde.
+        vom Fraunhofer ISE, Lizenz CC BY 4.0. Die Seite holt sich die Werte mehrmals am Tag neu, meist alle zwei bis vier Stunden. Jeder Wert zeigt, wann er gemessen wurde.
       </p>
       <p>
         <strong className="text-ink">Achtung, Satire:</strong> Die Zahlen sind echt, die Anzüglichkeiten nicht ernst gemeint. Der Erregungs-Index ist eine Spaß-Kennzahl

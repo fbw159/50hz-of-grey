@@ -43,11 +43,11 @@ describe('frequency metrics', () => {
     expect(getFrequencyStatus(freqDataset([50.0006], start), 1000)!.isPerfect).toBe(false);
   });
 
-  it('marks measurements older than three hours as stale', () => {
+  it('marks measurements older than six hours as stale', () => {
     const start = 0;
     const ds = freqDataset([50], start);
-    expect(getFrequencyStatus(ds, 181 * 60_000)!.stale).toBe(true);
-    expect(getFrequencyStatus(ds, 179 * 60_000)!.stale).toBe(false);
+    expect(getFrequencyStatus(ds, 361 * 60_000)!.stale).toBe(true);
+    expect(getFrequencyStatus(ds, 359 * 60_000)!.stale).toBe(false);
   });
 
   it('returns null without data', () => {

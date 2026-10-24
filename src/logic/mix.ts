@@ -119,8 +119,11 @@ export function latestGenerationIndex(ds: Dataset): number {
   return i;
 }
 
-/** Generation data older than this no longer counts as "now" (headline, index). */
-export const GENERATION_STALE_AFTER_MS = 8 * HOUR;
+/**
+ * Generation data older than this no longer counts as "now" (headline, index).
+ * Energy-Charts lags one to two hours, and snapshots come every few hours.
+ */
+export const GENERATION_STALE_AFTER_MS = 10 * HOUR;
 
 export function getGenerationStatus(ds: Dataset | undefined, now: number): GenerationStatus | null {
   if (!ds || ds.timestamps.length === 0) return null;

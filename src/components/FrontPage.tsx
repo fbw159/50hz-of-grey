@@ -89,7 +89,7 @@ export function FrontPage({ view, status, slot, onRetry, onDemo }: Props) {
   const truth = h
     ? h.truth
     : hasData
-      ? 'Gerade gibt es keine frische Frequenzmessung, und Preis und Öko-Anteil sind unauffällig. Neue Daten kommen meist innerhalb einer Stunde.'
+      ? 'Gerade gibt es keine frische Frequenzmessung, und Preis und Öko-Anteil sind unauffällig. Neue Daten kommen alle paar Stunden.'
       : status === 'error'
         ? ERROR_TEXT.line
         : LOADING_TEXT.line;
@@ -222,7 +222,7 @@ export function FrontPage({ view, status, slot, onRetry, onDemo }: Props) {
           {view.frequency.stale
             ? ' (zu alt, zählt nicht mit)'
             : view.frequency.ageMs > 15 * 60_000
-              ? ` (${formatAge(view.frequency.ageMs)}, die Daten kommen etwa alle 30 bis 60 Minuten)`
+              ? ` (${formatAge(view.frequency.ageMs)}, neue Messwerte kommen alle paar Stunden)`
               : ''}
         </p>
       )}
