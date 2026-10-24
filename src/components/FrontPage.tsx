@@ -4,8 +4,8 @@ import { Seg } from './Meters';
 import type { GridView } from '@/logic/view';
 import type { Headline } from '@/logic/headline';
 import { doomClockTime, minutesToMidnight } from '@/logic/panic';
-import { ERROR_TEXT, INDEX_NAME, LOADING_TEXT, MOODS, QUOTES, SOCKET_NAME, SOCKET_POKES, doomLine, pick } from '@/content/texts';
-import { formatBerlinTime } from '@/lib/dateUtils';
+import { ERROR_TEXT, INDEX_NAME, LOADING_TEXT, MOODS, QUOTES, SHORT_CIRCUIT, SOCKET_NAME, SOCKET_POKES, doomLine, pick } from '@/content/texts';
+import { formatAge, formatBerlinTime } from '@/lib/dateUtils';
 
 interface Props {
   view: GridView;
@@ -78,28 +78,55 @@ export function FrontPage({ view, status, slot, onRetry, onDemo }: Props) {
   const quote = poke ? poke.text : panic ? pick(QUOTES[panic.mood], slot) : status === 'error' ? 'Ich sehe nichts! Ist das schon der Blackout?' : 'Moment, ich mache mich noch frisch …';
   const lit = panic ? Math.round((panic.score / 100) * BAR_SEGMENTS) : 0;
 
+  const hasData = status === 'ready' || !!panic;
   const headline: Pick<Headline, 'kicker' | 'text' | 'highlight'> = h
     ? h
-    : status === 'error'
-      ? { kicker: 'Panne', text: 'Netzdaten spurlos verschwunden!', highlight: 'verschwunden' }
-      : { kicker: 'Gleich', text: 'Mr. Grey macht sich noch frisch …', highlight: '' };
-  const truth = h ? h.truth : status === 'error' ? ERROR_TEXT.line : LOADING_TEXT.line;
+    : hasData
+      ? { kicker: 'Skandal', text: 'Stromnetz macht einfach seinen Job!', highlight: 'seinen Job' }
+      : status === 'error'
+        ? { kicker: 'Panne', text: 'Netzdaten spurlos verschwunden!', highlight: 'verschwunden' }
+        : { kicker: 'Gleich', text: 'Mr. Grey macht sich noch frisch …', highlight: '' };
+  const truth = h
+    ? h.truth
+    : hasData
+      ? 'Gerade gibt es keine frische Frequenzmessung, und Preis und Öko-Anteil sind unauffällig. Neue Daten kommen meist innerhalb einer Stunde.'
+      : status === 'error'
+        ? ERROR_TEXT.line
+        : LOADING_TEXT.line;
 
+  const pokes = useRef(0);
+  const zapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [zap, setZap] = useState(false);
   const onPoke = () => {
-    const n = (poke?.n ?? -1) + 1;
-    setPoke({ n, text: SOCKET_POKES[n % SOCKET_POKES.length] });
+    const n = pokes.current;
+    pokes.current += 1;
+    // every tenth poke: short circuit
+    const short = (n + 1) % 10 === 0;
+    setPoke({ n, text: short ? SHORT_CIRCUIT : SOCKET_POKES[n % SOCKET_POKES.length] });
+    try {
+      navigator.vibrate?.(short ? [60, 40, 60, 40, 200] : 15);
+    } catch {
+      /* not supported */
+    }
+    if (short) {
+      setZap(true);
+      if (zapTimer.current) clearTimeout(zapTimer.current);
+      zapTimer.current = setTimeout(() => setZap(false), 1000);
+    }
     if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => setPoke(null), 3200);
+    timer.current = setTimeout(() => setPoke(null), short ? 4500 : 3200);
   };
   useEffect(() => {
     const t = timer;
+    const z = zapTimer;
     return () => {
       if (t.current) clearTimeout(t.current);
+      if (z.current) clearTimeout(z.current);
     };
   }, []);
 
   return (
-    <section className="frontpage" aria-labelledby="hero-title" data-testid="hero">
+    <section className={`frontpage${zap ? ' zap' : ''}`} aria-labelledby="hero-title" data-testid="hero">
       <div className="relative">
         <span className="starburst" aria-hidden="true">
           <span>{headline.kicker}</span>
@@ -112,7 +139,7 @@ export function FrontPage({ view, status, slot, onRetry, onDemo }: Props) {
 
       <div className="mt-4 grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 px-3">
         <button ref={socketRef} type="button" onClick={onPoke} className="photo -rotate-2" aria-label={`${SOCKET_NAME} anstupsen`} data-testid="socket">
-          <SocketFace mood={mood} poked={!!poke} key={poke?.n ?? 'idle'} tie look={look} size={124} />
+          <SocketFace mood={zap ? 'panic' : mood} poked={!!poke} key={poke?.n ?? 'idle'} tie look={look} size={124} />
         </button>
         <div className="pt-1">
           <p className="quote" aria-live="polite" data-testid="quote">
@@ -192,7 +219,11 @@ export function FrontPage({ view, status, slot, onRetry, onDemo }: Props) {
       {view.frequency && (
         <p className="fine mt-3 px-3 pb-1 text-center">
           Frequenz gemessen um {formatBerlinTime(view.frequency.t, true)} Uhr
-          {view.frequency.stale ? ' (älter als 20 Minuten, zählt nicht mit)' : ''}
+          {view.frequency.stale
+            ? ' (zu alt, zählt nicht mit)'
+            : view.frequency.ageMs > 15 * 60_000
+              ? ` (${formatAge(view.frequency.ageMs)}, die Daten kommen etwa alle 30 bis 60 Minuten)`
+              : ''}
         </p>
       )}
     </section>

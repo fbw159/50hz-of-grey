@@ -658,3 +658,29 @@ body {
     left 0.9s linear,
     top 0.9s linear;
 }
+
+/* Every tenth poke: short circuit. */
+.frontpage.zap {
+  animation: zap 1s steps(1) 1;
+}
+@keyframes zap {
+  0% {
+    filter: brightness(0.15);
+  }
+  12% {
+    filter: brightness(1.8) contrast(1.4);
+  }
+  24% {
+    filter: brightness(0.1);
+  }
+  40% {
+    filter: brightness(1.3);
+  }
+  55% {
+    filter: brightness(0.25);
+  }
+  70%,
+  100% {
+    filter: none;
+  }
+}

@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { useGridData, refreshGridData, setDemoMode } from '@/hooks/useGridData';
 import { useNow } from '@/hooks/useNow';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { showToast } from '@/hooks/useToast';
 import { buildView, slotOf, type GridView } from '@/logic/view';
 import { INDEX_NAME, MOODS } from '@/content/texts';
@@ -43,6 +44,7 @@ export default function App() {
   const slot = slotOf(now);
   const demo = data.mode === 'demo';
   const headlineText = view.headline?.text;
+  const wide = useMediaQuery('(min-width: 1024px)');
 
   // the browser tab gets the tabloid headline, too
   useEffect(() => {
@@ -59,7 +61,7 @@ export default function App() {
     <>
       {demo && (
         <div className="hazard sticky top-0 z-40 p-1.5" data-testid="demo-banner">
-          <div className="mx-auto flex max-w-[34rem] items-center justify-between gap-3 rounded-lg bg-[#1f1a0a] px-3 py-2 text-[0.9rem] text-[#fbe7a8]">
+          <div className={`mx-auto flex items-center justify-between ${wide ? 'max-w-[70rem]' : 'max-w-[34rem]'} gap-3 rounded-lg bg-[#1f1a0a] px-3 py-2 text-[0.9rem] text-[#fbe7a8]`}>
             <span className="font-semibold">Beispieldaten. Alles nur gespielt!</span>
             <button type="button" className="underline" onClick={() => setDemoMode(false)} data-testid="demo-off">
               Echte Daten laden
@@ -67,25 +69,59 @@ export default function App() {
           </div>
         </div>
       )}
-      <div className="mx-auto max-w-[34rem] px-4">
+      <div className={`mx-auto px-4 ${wide ? 'max-w-[70rem]' : 'max-w-[34rem]'}`}>
         <Header onShare={onShare} />
         <main className="space-y-4">
           <Ticker view={view} slot={slot} />
-          <FrontPage view={view} status={data.status} slot={slot} onRetry={() => void refreshGridData()} onDemo={() => setDemoMode(true)} />
-          <Meters view={view} />
-          {!demo && data.snapshotFetchedAt && (
-            <p className="px-1 text-center text-[0.8125rem] text-ink-2" data-testid="data-age">
-              {data.offline ? 'Offline. ' : ''}Echte Messwerte, zuletzt abgeholt um {formatBerlinTime(data.snapshotFetchedAt)} Uhr.
-            </p>
-          )}
-          <KillSwitch />
-          <NetzTv view={view} slot={slot} />
-          <PriceCard view={view} now={now} slot={slot} />
-          <MixCard view={view} />
-          <WeatherCard view={view} now={now} />
-          <GameCard />
-          <ProfileCard />
-          <FactCard dayKey={berlinDayKey(now)} />
+          {(() => {
+            const front = (
+              <>
+                <FrontPage view={view} status={data.status} slot={slot} onRetry={() => void refreshGridData()} onDemo={() => setDemoMode(true)} />
+                <Meters view={view} />
+                {!demo && data.snapshotFetchedAt && (
+                  <p className="px-1 text-center text-[0.8125rem] text-ink-2" data-testid="data-age">
+                    {data.offline ? 'Offline. ' : ''}Echte Messwerte, zuletzt abgeholt um {formatBerlinTime(data.snapshotFetchedAt)} Uhr.
+                  </p>
+                )}
+                <KillSwitch />
+              </>
+            );
+            const netzTv = <NetzTv view={view} slot={slot} />;
+            const price = <PriceCard view={view} now={now} slot={slot} />;
+            const mix = <MixCard view={view} />;
+            const weather = <WeatherCard view={view} now={now} />;
+            const game = <GameCard />;
+            const profile = <ProfileCard />;
+            const facts = <FactCard dayKey={berlinDayKey(now)} />;
+            // Desktop: two columns, roughly equally tall. Phone: one column, front page first.
+            return wide ? (
+              <div className="grid grid-cols-2 items-start gap-6">
+                <div className="space-y-4">
+                  {front}
+                  {price}
+                  {profile}
+                </div>
+                <div className="space-y-4">
+                  {netzTv}
+                  {mix}
+                  {weather}
+                  {game}
+                  {facts}
+                </div>
+              </div>
+            ) : (
+              <>
+                {front}
+                {netzTv}
+                {price}
+                {mix}
+                {weather}
+                {game}
+                {profile}
+                {facts}
+              </>
+            );
+          })()}
         </main>
         <Footer />
       </div>

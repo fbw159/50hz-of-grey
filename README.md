@@ -30,7 +30,7 @@ Netzfrequenz (Sekundenwerte, gemessen in Freiburg), Day-Ahead-Preis DE-LU, öffe
 
 Die API erlaubt keine direkten Abrufe aus fremden Webseiten (CORS). Deshalb holt ein **GitHub-Actions-Workflow** die Daten regelmäßig ab
 (`scripts/update-data.mjs`, im Takt der API-Limits), legt sie als `data/latest.json` neben die Seite und veröffentlicht neu.
-GitHub startet geplante Läufe nicht exakt, in der Praxis kommen neue Werte etwa alle 30 bis 45 Minuten.
+GitHub startet geplante Läufe nicht exakt (angefragt: alle 5 Minuten); in der Praxis kommen neue Werte meist alle 30 bis 60 Minuten.
 
 Ehrlichkeitsregeln:
 

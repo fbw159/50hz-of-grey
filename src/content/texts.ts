@@ -83,6 +83,9 @@ export const ERROR_TEXT = {
   line: 'Die Datenquelle antwortet gerade nicht. Versuch es gleich nochmal oder schau dir Beispieldaten an.',
 };
 
+/** Every tenth poke. */
+export const SHORT_CIRCUIT = 'KURZSCHLUSS! Siehst du, was du angerichtet hast? Zum Glück hab ich einen FI-Schalter.';
+
 /** What the socket says when you poke it. */
 export const SOCKET_POKES = [
   'Nicht so stürmisch! Wir kennen uns doch kaum.',

@@ -40,6 +40,8 @@ test.describe('with real data (snapshot)', () => {
     await page.goto('./');
     await page.getByTestId('socket').click();
     await expect(page.getByTestId('quote')).toContainText('Nicht so stürmisch');
+    for (let i = 0; i < 9; i++) await page.getByTestId('socket').click();
+    await expect(page.getByTestId('quote')).toContainText('KURZSCHLUSS');
 
     // Netz-TV replays the measurement second by second
     const t1 = await page.getByTestId('replay-time').textContent();

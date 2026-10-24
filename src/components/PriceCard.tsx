@@ -45,7 +45,7 @@ function Bars({ day, now }: { day: DayView; now: number }) {
       {nowIndex >= 0 && (
         <span
           className="absolute top-0 -translate-x-1/2 rounded-md bg-ink px-1.5 text-[0.7rem] font-semibold leading-[1.2rem] text-panel-hi"
-          style={{ left: `${((nowIndex + 0.5) / n) * 100}%` }}
+          style={{ left: `${Math.min(93, Math.max(7, ((nowIndex + 0.5) / n) * 100))}%` }}
         >
           jetzt
         </span>
