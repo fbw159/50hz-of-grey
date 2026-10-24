@@ -3,6 +3,7 @@ import type { GridView } from '@/logic/view';
 import { SOURCES, sourceCaption, tradeText } from '@/content/texts';
 import { formatBerlinTime, zonedParts } from '@/lib/dateUtils';
 import { formatNumber } from '@/lib/formatters';
+import { formatBig, powerEquivalents } from '@/logic/convert';
 
 const TOP = 5;
 
@@ -76,7 +77,35 @@ export function MixCard({ view }: { view: GridView }) {
           {tradeText(trade, `${formatNumber(Math.abs(trade) / 1000, 1)} GW`)}
         </p>
       )}
+      {g.totalGenerationMw !== null && g.totalGenerationMw > 0 && <PowerInWords mw={g.totalGenerationMw} />}
       <p className="fine mt-3">Öffentliche Nettostromerzeugung in Deutschland, Daten von Energy-Charts (Fraunhofer ISE). Anteile in Klammern: an der Erzeugung.</p>
     </section>
+  );
+}
+
+function PowerInWords({ mw }: { mw: number }) {
+  const eq = powerEquivalents(mw);
+  return (
+    <div className="mt-2 rounded-xl bg-panel-hi p-3 text-[0.95rem]" data-testid="power-words">
+      <p className="font-cond text-[1.1rem] font-bold">Auf Deutsch: {formatNumber(mw / 1000, 1)} GW sind …</p>
+      <ul className="mt-1 space-y-1">
+        <li>
+          <span aria-hidden="true">⚡ </span>
+          <strong>{formatNumber(eq.deloreans, 0)} Zeitreisen</strong> gleichzeitig (je 1,21 Gigawatt, wie im Film)
+        </li>
+        <li>
+          <span aria-hidden="true">🐎 </span>
+          <strong>{formatBig(eq.horsepower)} PS</strong>, also ziemlich viele Pferde
+        </li>
+        <li>
+          <span aria-hidden="true">🚴 </span>
+          <strong>{formatBig(eq.cyclists)} Menschen</strong> auf dem Heimtrainer mit je 100 Watt. Das ist {formatNumber(eq.cyclistsPerGerman, 0)}-mal ganz Deutschland.
+        </li>
+        <li>
+          <span aria-hidden="true">🫖 </span>
+          <strong>{formatBig(eq.kettles)} Wasserkocher</strong> mit je 2 Kilowatt, alle gleichzeitig
+        </li>
+      </ul>
+    </div>
   );
 }

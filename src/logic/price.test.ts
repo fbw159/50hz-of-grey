@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Dataset } from '@/types/data';
 import { startOfBerlinDay } from '@/lib/dateUtils';
-import { dayStats, getPriceOverview, hourlyPrices, kwhPerEuro, priceExtremes, priceRegime, upcomingExtremes } from './price';
+import { dayStats, getPriceOverview, hourlyPrices, kwhPerEuro, nextHours, priceExtremes, priceRegime, upcomingExtremes } from './price';
 
 const QUARTER = 15 * 60_000;
 
@@ -123,6 +123,18 @@ describe('hourly prices', () => {
     expect(ex.priciest.avg).toBe(300);
     const late = startOfBerlinDay('2026-10-16') + 1000;
     expect(upcomingExtremes(hours, late)!.cheapest.avg).toBe(10); // nothing left → whole day
+  });
+
+  it('looks 24 hours ahead across midnight', () => {
+    const ds = priceDataset(['2026-10-15', '2026-10-16'], (d, i) => (d === 1 && Math.floor(i / 4) === 13 ? -5 : 80));
+    const today = hourlyPrices(dayStats(ds, '2026-10-15'));
+    const tomorrow = hourlyPrices(dayStats(ds, '2026-10-16'));
+    const late = startOfBerlinDay('2026-10-15') + 22.5 * 3_600_000;
+    const hours = nextHours([today, tomorrow], late);
+    expect(hours[0].start).toBe(startOfBerlinDay('2026-10-15') + 22 * 3_600_000); // the current hour counts
+    expect(hours).toHaveLength(25); // the running hour plus 24 more
+    expect(priceExtremes(hours)!.cheapest.avg).toBe(-5); // tomorrow 13–14 Uhr
+    expect(nextHours([today, null], late)).toHaveLength(2);
   });
 
   it('converts a price into kWh per euro', () => {

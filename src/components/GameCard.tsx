@@ -7,6 +7,7 @@ import { shareText } from '@/lib/share';
 import { showToast } from '@/hooks/useToast';
 import { formatNumber } from '@/lib/formatters';
 import { Seg } from './Meters';
+import { SocketFace, type FaceMood } from './SocketFace';
 
 const SPAN = 0.25; // scale shows 49,75 … 50,25 Hz
 
@@ -134,8 +135,11 @@ export function GameCard() {
       {game && (
         <div className="mt-3">
           <div className="flex items-center justify-between gap-3">
+            <span className="shrink-0" data-testid="game-face">
+              <SocketFace mood={gameMood(game)} size={62} />
+            </span>
             <span className="lcd inline-flex items-baseline gap-1.5 px-3 py-2">
-              <Seg text={game.f.toFixed(3)} className="text-[1.6rem] leading-none" />
+              <Seg text={game.f.toFixed(3)} className="text-[1.45rem] leading-none" />
               <span className="text-[0.9rem] font-semibold">Hz</span>
             </span>
             <span className="text-right font-cond leading-tight">
@@ -224,4 +228,16 @@ function Result({ game, onAgain, onShare }: { game: GameState; onAgain: () => vo
       </div>
     </div>
   );
+}
+
+/** Mr. Grey sweats along with the player. */
+function gameMood(g: GameState): FaceMood {
+  if (g.status === 'won') return 'chill';
+  if (g.status === 'low' || g.status === 'high') return 'dead';
+  const d = Math.abs(g.f - 50);
+  if (d < 0.03) return 'zen';
+  if (d < 0.06) return 'chill';
+  if (d < 0.1) return 'nervous';
+  if (d < 0.15) return 'sweaty';
+  return 'panic';
 }

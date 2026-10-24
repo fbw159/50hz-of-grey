@@ -1,6 +1,6 @@
 # ⚡ 50 Hz of Grey
 
-**Wie geht's dem deutschen Stromnetz gerade?** Mr. Grey, eine Steckdose mit Gefühlen, erklärt es dir – mit echten Messwerten und viel Spannung. Satire mit Augenzwinkern, frei nach einem bekannten Roman (nur der Grauton ist geklaut).
+**Die Boulevard-Zeitung fürs Stromnetz.** Echte Messwerte, maßlos übertriebene Schlagzeilen – und darunter immer „Die Wahrheit“, fachlich sauber. Kommentiert von Mr. Grey (230), einer Steckdose mit Krawatte und Gefühlen.
 
 👉 **Live:** https://fbw159.github.io/50hz-of-grey/
 
@@ -10,17 +10,17 @@
 
 Eine einzige Seite, gebaut fürs Handy:
 
-- **Mr. Grey, die Steckdose,** zeigt die Laune des Netzes: tiefenentspannt, entspannt, leicht erregt, ganz schön heiß oder außer Kontrolle. Antippen erlaubt (er hat Grenzen).
-- **Erregungs-Index (0–100):** ein Spaß-Index aus drei echten Werten – Abweichung der Frequenz von 50 Hz, Börsenstrompreis und wie wenig Wind und Sonne gerade liefern. „Erregung“ heißt bei Generatoren übrigens wirklich so.
-- **Weltuntergangsuhr:** rechnet den Index in Minuten bis Mitternacht um. Reine Satire.
-- **Eilmeldungs-Ticker:** echte Werte und absurde Endzeit-Schlagzeilen.
-- **Drei Messgeräte:** Netzfrequenz, Börsenstrompreis, Öko-Anteil.
-- **Not-Aus („Bloß nicht drücken“):** löst einen Blackout aus, dann Schwarzstart, dann Licht an – plus der echte Fakt, wie selten Stromausfälle in Deutschland sind.
-- **Der Puls des Netzes:** die Frequenz der letzten zehn Minuten als EKG.
-- **Was kostet der Spaß gerade?** Börsenpreis jetzt, Stundenbalken für heute und morgen und der Schleudergang-Tipp (billigste und teuerste noch kommende Stunde).
-- **Wer bringt das Netz gerade in Fahrt?** Sonne, Wind, Kohle, Gas & Co. mit je einem Spruch.
-- **Spiel „Halt die 50 Hz!“:** 45 Sekunden Leitwarte – Halbzeitpausen, Kuschelabende, Meteoriten und Zombies mit dem Kraftwerk ausgleichen.
-- **Steckbrief von Mr. Grey:** sucht Stecker mit Schutzkontakt, Safeword „Lastabwurf“.
+- **Titelseite:** Aus den echten Werten wird eine Schlagzeile („Wer hat die 19 Millihertz geklaut?“, „Strom kostet weniger als nichts!“). Darunter Mr. Grey mit Zitat und die nüchterne Einordnung „Die Wahrheit: …“. Mr. Greys Augen folgen dem Finger, antippen erlaubt.
+- **Erregungs-Index (0–100) und Weltuntergangsuhr:** Spaß-Index aus Frequenzabweichung, Börsenpreis und Flaute; die Uhr rechnet ihn in Minuten bis Mitternacht um. Satire, keine offizielle Kennzahl.
+- **Eilmeldungs-Ticker** mit echten Werten und absurden Endzeit-Schlagzeilen.
+- **Messgeräte:** Netzfrequenz, Börsenstrompreis, Öko-Anteil.
+- **Not-Aus („Bloß nicht drücken“):** Blackout, Schwarzstart, Licht an – plus die echte Zahl, wie selten Stromausfälle sind.
+- **Netz-TV:** Die echte Frequenzmessung der letzten zehn Minuten läuft Sekunde für Sekunde noch einmal ab. Mit „Auf Deutsch“ (die Abweichung als Parkfehler auf der Strecke Hamburg–München) und dem Schuldigen-Finder („Eindeutig ein Wasserkocher in Lissabon“) samt echter Erklärung.
+- **Was kostet der Spaß gerade?** Börsenpreis, Stundenbalken, Schleudergang-Tipp für die nächsten 24 Stunden und Preise für Waschladung, E-Auto-Akku und ein Jahr Kühlschrank.
+- **Wer bringt das Netz gerade in Fahrt?** Strommix mit Sprüchen, dazu die Leistung in DeLorean-Zeitreisen (1,21 Gigawatt), PS, Heimtrainern und Wasserkochern.
+- **Netz-Wetter:** echte Wind-, Solar- und Preisprognosen der nächsten Stunden als Wetterbericht.
+- **Spiel „Halt die 50 Hz!“:** 45 Sekunden Leitwarte, Mr. Grey schwitzt mit.
+- **Steckbrief:** Mr. Greys Dating-Profil („Wohnt in deiner Wand“), mit Weiter- und Einstecken-Knopf.
 - **Bettgeflüster für Ingenieure:** kurze, echte Fakten zum Stromnetz.
 
 ## Woher die Zahlen kommen
@@ -61,9 +61,9 @@ npm run lint
 ```
 src/
   App.tsx              die Seite
-  components/          Steckdose, Messgeräte, Karten, Spiel
+  components/          Titelseite, Steckdose, Messgeräte, Netz-TV, Karten, Spiel
   content/texts.ts     alle Sprüche und Fakten an einem Ort
-  logic/               Erregungs-Index (panic.ts), Preise, Strommix, Frequenz, Spielphysik (alles getestet)
+  logic/               Schlagzeilen, Umrechnungen, Netz-Wetter, Erregungs-Index, Preise, Strommix, Frequenz, Spiel (alles getestet)
   services/            Datenabruf: Snapshot, Cache, Live-API (Dev)
   lib/                 Formatierung, Zeit (Europe/Berlin), Zeitreihen
 scripts/

@@ -60,6 +60,9 @@ export function makeSnapshot(now = Date.now()) {
     datasets: {
       frequency: ds('/v2/frequency', 'Hz', fStart, 1000, fCount, { frequency: range(fCount, (i) => 50 + 0.018 * Math.sin(i / 40)) }, { timezone: 'UTC', resolution: null }),
       price: ds('/v2/price', 'EUR / MWh', pStart, QUARTER, pCount, { day_ahead_price: range(pCount, (i) => 90 + 70 * Math.sin(i / 15)) }, { resolution: 'PT15M', intervalMinutes: 15 }),
+      forecastSolar: ds('/v2/public_power_forecast', 'MW', pStart, QUARTER, pCount, { solar: range(pCount, (i) => Math.max(0, 30_000 * Math.sin(((i % 96) - 28) / 40 * Math.PI))) }, { resolution: 'PT15M', intervalMinutes: 15 }),
+      forecastWindOnshore: ds('/v2/public_power_forecast', 'MW', pStart, QUARTER, pCount, { wind_onshore: range(pCount, () => 16_000) }, { resolution: 'PT15M', intervalMinutes: 15 }),
+      forecastWindOffshore: ds('/v2/public_power_forecast', 'MW', pStart, QUARTER, pCount, { wind_offshore: range(pCount, () => 5000) }, { resolution: 'PT15M', intervalMinutes: 15 }),
       publicPower: ds(
         '/v2/public_power',
         'MW',

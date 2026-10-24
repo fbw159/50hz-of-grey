@@ -47,19 +47,33 @@ async function fontFace(family, file, weight) {
   return `@font-face{font-family:'${family}';font-weight:${weight};src:url(data:font/woff2;base64,${data.toString('base64')}) format('woff2');}`;
 }
 
+const TIE = `
+  <defs><pattern id="tp" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(40)"><rect width="9" height="9" fill="#6f767a"/><rect width="3" height="9" fill="#5a6064"/></pattern></defs>
+  <path d="M94 199 L106 199 L116 236 L100 249 L84 236 Z" fill="url(#tp)" stroke="#41464a" stroke-width="1.5" stroke-linejoin="round"/>
+  <path d="M89 186 L111 186 L106 201 L94 201 Z" fill="#62686c" stroke="#41464a" stroke-width="1.5" stroke-linejoin="round"/>`;
+
 async function ogHtml() {
   const fonts = [
     await fontFace('Barlow Condensed', '@fontsource/barlow-condensed/files/barlow-condensed-latin-800-normal.woff2', 800),
-    await fontFace('Barlow', '@fontsource/barlow/files/barlow-latin-500-normal.woff2', 500),
+    await fontFace('Barlow', '@fontsource/barlow/files/barlow-latin-600-normal.woff2', 600),
   ].join('');
+  // A tabloid front page: that's what people see when the link is shared.
   return `<!doctype html><html><head><style>${fonts}
-    body{margin:0;width:1200px;height:630px;background:#cdd1cc;font-family:Barlow;color:#293133;display:flex;align-items:center;gap:56px;padding:0 80px;box-sizing:border-box}
-    h1{font-family:'Barlow Condensed';font-weight:800;font-size:112px;line-height:.95;margin:0 0 18px}
-    p{font-size:40px;margin:0;color:#545d5a}
-    .tag{display:inline-block;margin-top:34px;background:#f2a900;border:2px solid #9c6d00;border-radius:16px;padding:10px 22px;font-size:34px;color:#1f1a0a}
+    body{margin:0;width:1200px;height:630px;background:#cdd1cc;font-family:Barlow;color:#293133;position:relative;overflow:hidden}
+    .page{position:absolute;inset:34px 40px;background:#fffdf7;border-radius:28px;overflow:hidden;box-shadow:0 6px 0 #b9beb8}
+    .red{background:#d4141c;color:#fff;font-family:'Barlow Condensed';font-weight:800;text-transform:uppercase;font-size:104px;line-height:.92;padding:84px 48px 34px 46px;letter-spacing:-.005em}
+    mark{background:#ffe14d;color:#1d1f20;padding:0 .1em;border-radius:6px}
+    .sticker{position:absolute;left:40px;top:26px;transform:rotate(-5deg);background:#ffe14d;border:4px solid #1d1f20;border-radius:10px;padding:2px 18px;font-family:'Barlow Condensed';font-weight:800;font-size:40px;text-transform:uppercase;box-shadow:6px 6px 0 rgba(0,0,0,.35);color:#1d1f20}
+    .photo{position:absolute;right:56px;top:150px;background:#fff;padding:12px 12px 4px;border:2px solid #d9d6cc;border-radius:12px;transform:rotate(3deg);box-shadow:0 14px 30px -12px rgba(0,0,0,.45)}
+    .foot{position:absolute;left:46px;bottom:34px;font-size:34px}
+    .foot b{font-family:'Barlow Condensed';font-weight:800;font-size:44px;margin-right:14px}
   </style></head><body>
-    <svg width="360" height="360" viewBox="0 0 200 200">${SOCKET}</svg>
-    <div><h1>50 Hz of Grey</h1><p>Wie geht's dem Stromnetz gerade?</p><span class="tag">Echte Daten, viel Spannung.</span></div>
+    <div class="page">
+      <div class="red">Wer hat die<br><mark>Millihertz</mark><br>geklaut?</div>
+      <span class="sticker">Exklusiv</span>
+      <div class="foot"><b>50 Hz of Grey</b>Echte Netzdaten. Unechte Panik. Mr. Grey (230) ermittelt.</div>
+    </div>
+    <div class="photo"><svg width="270" height="338" viewBox="0 0 200 250">${TIE}${SOCKET}</svg></div>
   </body></html>`;
 }
 

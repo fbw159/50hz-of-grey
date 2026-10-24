@@ -6,6 +6,7 @@
  */
 import type { Mood } from '@/logic/panic';
 import type { GenerationCategoryId } from '@/logic/mix';
+import type { WeatherBlock, WeatherKind } from '@/logic/weather';
 import { hashString } from '@/lib/timeseries';
 
 export function pick<T>(list: T[], seed: string): T {
@@ -99,18 +100,29 @@ export const SOCKET_POKES = [
 ];
 
 /** Dating profile of the socket ("Steckbrief" – a pun in German). */
-export const PROFILE: { label: string; value: string }[] = [
-  { label: 'Typ', value: 'Schuko-Steckdose, Unterputz, gut geerdet' },
-  { label: 'Herkunft', value: 'Bayern, Familie seit den 1920ern im Geschäft' },
-  { label: 'Spannung', value: '230 Volt. Immer.' },
-  { label: 'Takt', value: '50 Hz, sehr regelmäßig, große Ausdauer' },
-  { label: 'Sucht', value: 'Stecker mit Schutzkontakt für eine feste Verbindung' },
-  { label: 'Mag', value: 'Erdung, Gleichmäßigkeit, Kerzenschein zur Lastspitze' },
-  { label: 'Mag nicht', value: 'Kurzschlüsse, nasse Finger, Mehrfachstecker hintereinander' },
-  { label: 'Lieblingsfilm', value: 'Armageddon. Wegen der Spannung.' },
-  { label: 'Notfallplan', value: 'Kerzen, Kurbelradio, Dosenravioli' },
-  { label: 'Safeword', value: 'Lastabwurf' },
+export const PROFILE_CHIPS = [
+  '⚡ 230 Volt',
+  '🎵 50 Hz, sehr regelmäßig',
+  '🛡️ Schutzkontakt',
+  '🕯️ Kerzenschein zur Lastspitze',
+  '🎬 Armageddon, wegen der Spannung',
+  '🥫 Notfallplan: Dosenravioli',
+  '🚫 nasse Finger',
+  '🗝️ Safeword: Lastabwurf',
 ];
+
+export const PROFILE_REPLIES = {
+  like: [
+    'Es hat gefunkt! Mr. Grey freut sich auf deinen Stecker. Aber bitte mit Schutzkontakt.',
+    'Match! Mr. Grey ist ganz erregt. Rein technisch, versteht sich.',
+    'Volle Spannung! Mr. Grey schreibt dir gleich. Mit 50 Nachrichten pro Sekunde.',
+  ],
+  nope: [
+    'Kein Problem. Mr. Grey ist trotzdem für dich da. Rund um die Uhr, mit 230 Volt.',
+    'Autsch. Mr. Grey löst innerlich den FI aus. Er kommt drüber hinweg.',
+    'Weiter? Es gibt nur eine Steckdose in deinem Leben, die so geerdet ist.',
+  ],
+};
 
 /* -------------------------------- Frequency ------------------------------- */
 
@@ -300,3 +312,109 @@ export const BLACKOUT_STEPS = {
     text: 'In echt dauert ein Schwarzstart viele Stunden. Zum Glück ist ein großer Blackout in Deutschland sehr unwahrscheinlich: 2024 waren es im Schnitt 11,7 Minuten Stromausfall pro Kunde. Im ganzen Jahr.',
   },
 };
+
+/* ------------------------------- Front page ------------------------------- */
+
+/** What Mr. Grey says on the front page, by mood. */
+export const QUOTES: Record<Mood, string[]> = {
+  zen: [
+    'Ich bin so entspannt, ich könnte glatt Gleichstrom machen.',
+    'Läuft bei mir. Wechselnd, aber läuft.',
+    'Pssst. Ich meditiere auf 50 Hertz.',
+  ],
+  chill: [
+    'Ein bisschen Kribbeln gehört dazu.',
+    'Alles im grünen Bereich. Fast schon langweilig.',
+    'Ich bleibe locker. Ich bin schließlich geerdet.',
+  ],
+  nervous: [
+    'Ich zittere am ganzen Kontakt!',
+    'Wer hat da schon wieder den Wasserkocher angemacht?',
+    'Ich bin nicht nervös. Ich schwinge nur.',
+  ],
+  sweaty: [
+    'Mir ist heiß! Hat jemand einen Lüfter?',
+    'Ich brauche dringend eine Abkühlung. Und Regelleistung.',
+    'Ich schwitze Elektronen!',
+  ],
+  panic: ['Holt mich hier raus, ich bin eine Steckdose!', 'Safeword! SAFEWORD!', 'Das ist das Ende! Oder ein Wackelkontakt.'],
+};
+
+/* ------------------------------ Wer ist schuld? --------------------------- */
+
+/** Frequency below 50 Hz: too little generation or too much consumption somewhere in Continental Europe. */
+export const CULPRITS_LOW = [
+  'ein Wasserkocher in Lissabon, der heimlich Teewasser kocht',
+  'Tante Erikas Bügeleisen in Castrop-Rauxel',
+  'eine Wolke, die sich frech vor eine Solaranlage in Würzburg geschoben hat',
+  'die Halbzeitpause eines Fußballspiels in Madrid',
+  'ein Föhn in Wien, der seit 20 Minuten läuft',
+  'ein Kühlschrank in Palermo, der gerade anspringt',
+  'eine Sauna in Bottrop',
+  'ein Rechenzentrum in Frankfurt, das eine KI auf Steckdosen-Witze trainiert',
+  'ein Windrad in Brandenburg, das Mittagspause macht',
+  'eine Pizzeria in Neapel, die ausnahmsweise elektrisch backt',
+  'ein Gamer in Warschau mit drei Grafikkarten',
+  'eine Waschmaschine in Athen im Schleudergang',
+];
+
+/** Frequency above 50 Hz: too much generation or too little consumption. */
+export const CULPRITS_HIGH = [
+  'ein Windrad in Ostfriesland mit Übermut',
+  'die Sonne über Bayern, die einfach nicht aufhören will',
+  'ein Wasserkraftwerk in den Alpen, das zu viel Kaffee hatte',
+  'ein Aluminiumwerk in Rotterdam, das Feierabend macht',
+  'Mr. Grey persönlich. Er hat einfach zu viel Energie',
+  'ein Pumpspeicher in Thüringen, der Wasser bergab rauschen lässt',
+  'eine Solaranlage auf einem Kuhstall im Allgäu',
+  'tausend Wäschetrockner in Athen, die gleichzeitig fertig sind',
+  'ein E-Auto in Bukarest, das voll ist und aufhört zu laden',
+  'halb Polen, das gleichzeitig den Fernseher ausmacht',
+  'eine Biogasanlage in Niedersachsen nach dem Bohneneintopf',
+];
+
+export function blameTruth(deviationMilliHz: number): string {
+  if (Math.abs(deviationMilliHz) < 2) return 'In Wahrheit: Erzeugung und Verbrauch sind gerade fast perfekt im Gleichgewicht. Niemand ist schuld. Wie langweilig.';
+  return deviationMilliHz < 0
+    ? 'In Wahrheit: In ganz Kontinentaleuropa wird gerade ein kleines bisschen mehr Strom verbraucht als erzeugt. Dann sinkt die Frequenz, und die Regelreserve gleicht automatisch aus.'
+    : 'In Wahrheit: In ganz Kontinentaleuropa wird gerade ein kleines bisschen mehr Strom erzeugt als verbraucht. Dann steigt die Frequenz, und die Regelreserve gleicht automatisch aus.';
+}
+
+/* ------------------------------- Netz-Wetter ------------------------------ */
+
+
+export const WEATHER_EMOJI: Record<WeatherKind, string> = {
+  storm: '🌪️',
+  windy: '🌬️',
+  sunny: '☀️',
+  cloudy: '⛅',
+  flaute: '🌑',
+  night: '🌙',
+  mixed: '🌥️',
+  unknown: '🔮',
+};
+
+const gw = (v: number | null) => (v === null ? '–' : new Intl.NumberFormat('de-DE', { maximumFractionDigits: 0 }).format(v));
+
+export function weatherLine(b: WeatherBlock): string {
+  switch (b.kind) {
+    case 'storm':
+      return `Stürmisch! Windstrom bis ${gw(b.windMaxGw)} GW. Die Windräder drehen durch, die Kohle macht Pause.`;
+    case 'windy':
+      return `Windig mit im Schnitt ${gw(b.windGw)} GW Windstrom. Die Frisur sitzt nicht, das Netz schon.`;
+    case 'sunny':
+      return `Sonnig! Solarstrom bis ${gw(b.solarMaxGw)} GW. Sonnenbrille auf, Börsenpreis runter.`;
+    case 'cloudy':
+      return `Heiter bis wolkig, Solarstrom bis ${gw(b.solarMaxGw)} GW, dazu ${gw(b.windGw)} GW Wind.`;
+    case 'flaute':
+      return `Dunkelflaute-Gefahr: nur ${gw(b.windGw)} GW Wind${b.solarGw !== null && b.solarGw >= 0.5 ? ` und ${gw(b.solarGw)} GW Sonne` : ''}. Gas und Kohle ziehen schon mal die Jacke an.`;
+    case 'night':
+      return b.windGw !== null && b.windGw >= 15
+        ? `Dunkel, aber windig: im Schnitt ${gw(b.windGw)} GW Windstrom. Die Windräder machen Nachtschicht.`
+        : `Es ist dunkel (Überraschung!) und eher ruhig: im Schnitt ${gw(b.windGw)} GW Wind.`;
+    case 'mixed':
+      return `Durchwachsen: ${gw(b.windGw)} GW Wind, ${gw(b.solarGw)} GW Sonne. Von allem ein bisschen.`;
+    case 'unknown':
+      return 'Der Wetterfrosch ist noch im Urlaub: Für diese Zeit gibt es noch keine Wind- und Solarprognose.';
+  }
+}

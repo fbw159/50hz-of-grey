@@ -181,3 +181,8 @@ export function upcomingExtremes(hours: HourPrice[], now: number): PriceExtremes
   const upcoming = hours.filter((h) => h.end > now);
   return priceExtremes(upcoming.length ? upcoming : hours);
 }
+
+/** Hours that have not ended yet within the next `horizonMs` (today + tomorrow, if published). */
+export function nextHours(days: (HourPrice[] | null | undefined)[], now: number, horizonMs = 24 * HOUR_MS): HourPrice[] {
+  return days.flatMap((d) => d ?? []).filter((h) => h.end > now && h.start < now + horizonMs);
+}

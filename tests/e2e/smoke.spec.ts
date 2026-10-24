@@ -10,6 +10,9 @@ test.describe('with real data (snapshot)', () => {
     const watcher = watchConsole(page);
     await page.goto('./');
     await expect(page.getByTestId('verdict')).not.toHaveText(/wärmt sich auf|nicht in Stimmung/);
+    await expect(page.getByTestId('headline')).not.toBeEmpty();
+    await expect(page.getByTestId('truth')).toContainText('Die Wahrheit:');
+    await expect(page.getByTestId('quote')).toContainText('„');
     await expect(page.getByTestId('panic-score')).toContainText('von 100');
     await expect(page.getByTestId('meter-frequency')).toHaveAttribute('aria-label', /Netzfrequenz: (49|50),\d{3} Hertz/);
     await expect(page.getByTestId('meter-price')).toHaveAttribute('aria-label', /Cent pro Kilowattstunde/);
@@ -20,6 +23,10 @@ test.describe('with real data (snapshot)', () => {
     await expect(page.getByTestId('price-value')).toBeVisible();
     await expect(page.getByTestId('price-tip')).toContainText('Schleudergang-Tipp');
     await expect(page.getByTestId('profile-card')).toContainText('Lastabwurf');
+    await expect(page.getByTestId('precision')).toContainText('Hamburg nach München');
+    await expect(page.getByTestId('price-euro')).toContainText('Waschladung');
+    await expect(page.getByTestId('power-words')).toContainText('Zeitreisen');
+    await expect(page.getByTestId('weather-list').locator('li').first()).toBeVisible();
     await expect(page.getByTestId('share-value')).toContainText('64 %');
     await expect(page.getByTestId('trade')).toContainText('ans Ausland ab');
     await expect(page.getByTestId('game-card')).toBeVisible();
@@ -32,7 +39,22 @@ test.describe('with real data (snapshot)', () => {
   test('interactive bits: poke, tomorrow prices, all sources, next fact', async ({ page }) => {
     await page.goto('./');
     await page.getByTestId('socket').click();
-    await expect(page.getByTestId('socket-bubble')).toBeVisible();
+    await expect(page.getByTestId('quote')).toContainText('Nicht so stürmisch');
+
+    // Netz-TV replays the measurement second by second
+    const t1 = await page.getByTestId('replay-time').textContent();
+    await expect(page.getByTestId('replay-time')).not.toHaveText(t1 ?? '', { timeout: 4000 });
+
+    const blame = page.getByTestId('blame');
+    if (await page.getByTestId('blame-next').isVisible()) {
+      const c1 = await page.getByTestId('culprit').textContent();
+      await page.getByTestId('blame-next').click();
+      await expect(page.getByTestId('culprit')).not.toHaveText(c1 ?? '');
+    }
+    await expect(blame).toContainText('In Wahrheit');
+
+    await page.getByTestId('profile-like').click();
+    await expect(page.getByTestId('toast')).toBeVisible();
 
     await page.getByTestId('day-tomorrow').click();
     await expect(page.getByTestId('day-tomorrow')).toHaveAttribute('aria-selected', 'true');

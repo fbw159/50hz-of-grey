@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import type { Mood } from '@/logic/panic';
 
 export type FaceMood = Mood | 'loading' | 'dead';
@@ -6,49 +7,71 @@ interface Props {
   mood: FaceMood;
   poked?: boolean;
   size?: number;
+  /** Mr. Grey's grey tie. */
+  tie?: boolean;
+  /** Where the eyes look, each axis −1 … 1. */
+  look?: { x: number; y: number };
 }
 
 const HOLE = '#2b2f31';
 
 /** A German Schuko socket with feelings. The two pin holes are the eyes. */
-export function SocketFace({ mood, poked = false, size = 200 }: Props) {
+export function SocketFace({ mood, poked = false, size = 200, tie = false, look }: Props) {
+  const uid = useId().replace(/:/g, '');
+  const id = (name: string) => `${name}-${uid}`;
   const wide = mood === 'panic';
   const r = wide ? 13 : 11;
+  const lx = look ? Math.max(-1, Math.min(1, look.x)) * 4.5 : 0;
+  const ly = look ? Math.max(-1, Math.min(1, look.y)) * 3.5 : 0;
+  const height = tie ? size * 1.25 : size;
   return (
     <svg
       className={`socket${poked ? ' poked' : ''}`}
       data-mood={mood}
       width={size}
-      height={size}
-      viewBox="0 0 200 200"
+      height={height}
+      viewBox={`0 0 200 ${tie ? 250 : 200}`}
       role="img"
       aria-label={`Mr. Grey, die Steckdose, Stimmung: ${MOOD_LABEL[mood]}`}
     >
       <defs>
-        <linearGradient id="sf-plate" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id={id('plate')} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#fdfcf8" />
           <stop offset="1" stopColor="#e6e3da" />
         </linearGradient>
-        <radialGradient id="sf-recess" cx="50%" cy="40%" r="60%">
+        <radialGradient id={id('recess')} cx="50%" cy="40%" r="60%">
           <stop offset="0" stopColor="#ebe8df" />
           <stop offset="1" stopColor="#d2cec3" />
         </radialGradient>
-        <linearGradient id="sf-metal" x1="0" y1="0" x2="1" y2="0">
+        <linearGradient id={id('metal')} x1="0" y1="0" x2="1" y2="0">
           <stop offset="0" stopColor="#8d9398" />
           <stop offset="0.5" stopColor="#e3e6e8" />
           <stop offset="1" stopColor="#8d9398" />
         </linearGradient>
+        <pattern id={id('tie')} width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(40)">
+          <rect width="9" height="9" fill="#6f767a" />
+          <rect width="3" height="9" fill="#5a6064" />
+        </pattern>
       </defs>
+
+      {/* tie (behind the plate's lower edge) */}
+      {tie && (
+        <g>
+          <path d="M94 199 L106 199 L116 236 L100 249 L84 236 Z" fill={`url(#${id('tie')})`} stroke="#41464a" strokeWidth="1.5" strokeLinejoin="round" />
+          <path d="M89 186 L111 186 L106 201 L94 201 Z" fill="#62686c" stroke="#41464a" strokeWidth="1.5" strokeLinejoin="round" />
+        </g>
+      )}
 
       {/* plate + recess */}
       <rect x="8" y="10" width="184" height="184" rx="34" fill="#b9b6ac" />
-      <rect x="8" y="6" width="184" height="184" rx="34" fill="url(#sf-plate)" stroke="#c4c1b7" strokeWidth="1.5" />
-      <circle cx="100" cy="100" r="68" fill="url(#sf-recess)" />
+      <rect x="8" y="6" width="184" height="184" rx="34" fill={`url(#${id('plate')})`} stroke="#c4c1b7" strokeWidth="1.5" />
+      {tie && <path d="M89 186 L111 186 L106 196 L94 196 Z" fill="#62686c" stroke="#41464a" strokeWidth="1.5" strokeLinejoin="round" />}
+      <circle cx="100" cy="100" r="68" fill={`url(#${id('recess')})`} />
       <circle cx="100" cy="100" r="68" fill="none" stroke="rgba(0,0,0,0.13)" strokeWidth="3" />
 
       {/* earthing clips (top and bottom, like the real thing) */}
-      <rect x="86" y="36" width="28" height="11" rx="3" fill="url(#sf-metal)" stroke="#7d8287" strokeWidth="0.8" />
-      <rect x="86" y="153" width="28" height="11" rx="3" fill="url(#sf-metal)" stroke="#7d8287" strokeWidth="0.8" />
+      <rect x="86" y="36" width="28" height="11" rx="3" fill={`url(#${id('metal')})`} stroke="#7d8287" strokeWidth="0.8" />
+      <rect x="86" y="153" width="28" height="11" rx="3" fill={`url(#${id('metal')})`} stroke="#7d8287" strokeWidth="0.8" />
 
       {/* cheeks – the more excited, the redder */}
       {mood !== 'dead' && mood !== 'loading' && (
@@ -68,9 +91,11 @@ export function SocketFace({ mood, poked = false, size = 200 }: Props) {
         <g className="eyes">
           <circle cx="72" cy="98" r={r} fill={HOLE} />
           <circle cx="128" cy="98" r={r} fill={HOLE} />
-          <g className="pupils" fill="#fff">
-            <circle cx={wide ? 72 : 75} cy={wide ? 98 : 94} r={wide ? 2.2 : 3.2} />
-            <circle cx={wide ? 128 : 131} cy={wide ? 98 : 94} r={wide ? 2.2 : 3.2} />
+          <g transform={`translate(${lx.toFixed(2)} ${ly.toFixed(2)})`}>
+            <g className={`pupils${look ? '' : ' wander'}`} fill="#fff">
+              <circle cx={wide ? 72 : 74} cy={wide ? 98 : 95} r={wide ? 2.2 : 3.4} />
+              <circle cx={wide ? 128 : 130} cy={wide ? 98 : 95} r={wide ? 2.2 : 3.4} />
+            </g>
           </g>
           {mood === 'zen' && (
             <g fill="#ddd9cf" stroke={HOLE} strokeWidth="2.5" strokeLinecap="round">

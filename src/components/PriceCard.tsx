@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import type { DayView, GridView } from '@/logic/view';
-import { kwhPerEuro, upcomingExtremes, type HourPrice } from '@/logic/price';
+import { nextHours, priceExtremes, type HourPrice } from '@/logic/price';
+import { priceEquivalents } from '@/logic/convert';
 import { PRICE_TEXT, pick, priceMood } from '@/content/texts';
-import { formatBerlinTime, formatBerlinShortDate } from '@/lib/dateUtils';
+import { berlinDayKey, formatBerlinTime, formatBerlinShortDate } from '@/lib/dateUtils';
 import { eurPerMwhToCtPerKwh, formatNumber, MINUS } from '@/lib/formatters';
 
 const W = 320;
@@ -96,10 +97,15 @@ export function PriceCard({ view, now, slot }: { view: GridView; now: number; sl
   if (!price || (!current && !day)) return null;
 
   const mood = current ? priceMood(current.value) : null;
-  const perEuro = current ? kwhPerEuro(current.value) : null;
+  const eq = current ? priceEquivalents(current.value) : null;
   const isTomorrow = which === 'tomorrow' && !!view.tomorrow;
-  const extremes = day ? (isTomorrow ? day.extremes : upcomingExtremes(day.hours, now)) : null;
-  const when = (h: HourPrice) => (now >= h.start && now < h.end ? `jetzt (${hourLabel(h)})` : hourLabel(h));
+  // today: the next 24 hours (incl. tomorrow once published); tomorrow: that whole day
+  const upcoming = isTomorrow ? (day?.hours ?? []) : nextHours([view.today?.hours, view.tomorrow?.hours], now);
+  const extremes = upcoming.length >= 3 ? priceExtremes(upcoming) : null;
+  const when = (h: HourPrice) => {
+    if (now >= h.start && now < h.end) return `jetzt (${hourLabel(h)})`;
+    return `${berlinDayKey(h.start) === berlinDayKey(now) ? 'heute' : 'morgen'} ${hourLabel(h)}`;
+  };
 
   return (
     <section id="preis" className="panel scroll-mt-4 p-4" aria-labelledby="price-title" data-testid="price-card">
@@ -126,20 +132,23 @@ export function PriceCard({ view, now, slot }: { view: GridView; now: number; sl
             An der Strombörse, für {formatBerlinTime(current.start)} bis {formatBerlinTime(current.end)} Uhr. Zu Hause zahlst du mit Steuern und Netzentgelten deutlich mehr.
           </p>
           <p className="mt-3 text-[1.05rem]">{pick(PRICE_TEXT[mood].lines, slot)}</p>
-          <p className="mt-2 rounded-xl bg-panel-hi p-3 text-[0.95rem]" data-testid="price-euro">
-            {perEuro !== null ? (
-              <>
-                Für 1 Euro gibt es an der Börse gerade <strong>{formatNumber(perEuro, 1)} kWh</strong>. Das reicht grob für {Math.max(1, Math.round(perEuro))}{' '}
-                {Math.round(perEuro) === 1 ? 'Waschgang' : 'Waschgänge'} oder {formatNumber(Math.max(10, Math.round(perEuro / 0.02 / 10) * 10), 0)} Handyladungen.
-              </>
-            ) : current.value < 0 ? (
-              <>
-                Wer jetzt 1 kWh abnimmt, bekommt an der Börse <strong>{formatNumber(Math.abs(eurPerMwhToCtPerKwh(current.value)), 1)} ct</strong> dazu.
-              </>
-            ) : (
-              <>Strom kostet an der Börse gerade exakt nichts. Gratis-Strom, nur nicht für dich.</>
-            )}
-          </p>
+          {eq && (
+          <div className="mt-2 rounded-xl bg-panel-hi p-3 text-[0.95rem]" data-testid="price-euro">
+            <p className="font-cond text-[1.1rem] font-bold">Auf Deutsch, zum Börsenpreis</p>
+            <ul className="mt-1 space-y-1">
+              <li>
+                <span aria-hidden="true">🧺 </span>Eine Waschladung (ca. 1 kWh): <strong>{moneyCt(eq.washCt)}</strong>
+              </li>
+              <li>
+                <span aria-hidden="true">🚗 </span>Ein E-Auto-Akku voll (50 kWh): <strong>{moneyEur(eq.evEur)}</strong>
+              </li>
+              <li>
+                <span aria-hidden="true">🧊 </span>Ein Jahr Kühlschrank (ca. 150 kWh): <strong>{moneyEur(eq.fridgeEur)}</strong>
+              </li>
+            </ul>
+            <p className="fine mt-1">Ohne Steuern, Umlagen und Netzentgelte. Die machen zu Hause gut die Hälfte des Preises aus.</p>
+          </div>
+          )}
         </>
       )}
 
@@ -170,15 +179,19 @@ export function PriceCard({ view, now, slot }: { view: GridView; now: number; sl
             <div className="mt-3 rounded-xl border border-dashed border-line p-3 text-[0.95rem]" data-testid="price-tip">
               <p>
                 <span aria-hidden="true">🧺 </span>
-                <strong>Schleudergang-Tipp:</strong> Am günstigsten {isTomorrow ? 'morgen' : 'wird es heute noch'} {when(extremes.cheapest)} mit{' '}
-                {formatPrice(extremes.cheapest.avg)}.
+                <strong>Schleudergang-Tipp:</strong> Am günstigsten {isTomorrow ? '' : 'in den nächsten 24 Stunden: '}
+                {when(extremes.cheapest)} mit {formatPrice(extremes.cheapest.avg)}.
               </p>
               <p className="mt-1">
                 <span aria-hidden="true">🕯️ </span>
-                Am teuersten {isTomorrow ? '' : 'noch '}
-                {when(extremes.priciest)} mit {formatPrice(extremes.priciest.avg)}. Perfekt für ein Candle-Light-Dinner, Kerzen brauchen keinen Strom.
+                Am teuersten {when(extremes.priciest)} mit {formatPrice(extremes.priciest.avg)}. Perfekt für ein Candle-Light-Dinner, Kerzen brauchen keinen Strom.
               </p>
             </div>
+          )}
+          {!extremes && !isTomorrow && (
+            <p className="mt-3 rounded-xl border border-dashed border-line p-3 text-[0.95rem]" data-testid="price-tip">
+              <span aria-hidden="true">🌙 </span>Heute kommt nicht mehr viel. Die Waschmaschine darf schlafen gehen.
+            </p>
           )}
           {!view.tomorrow && <p className="fine mt-2">Die Preise für morgen kommen jeden Tag ab etwa 13 Uhr.</p>}
         </>
@@ -191,4 +204,14 @@ export function PriceCard({ view, now, slot }: { view: GridView; now: number; sl
 function formatPrice(eurMwh: number): string {
   const v = eurPerMwhToCtPerKwh(eurMwh);
   return `${v < 0 ? MINUS : ''}${formatNumber(Math.abs(v), 1)} ct/kWh`;
+}
+
+function moneyCt(ct: number): string {
+  if (Math.abs(ct) < 0.05) return 'praktisch nichts';
+  return ct < 0 ? `du bekommst ${formatNumber(-ct, 1)} Cent` : `${formatNumber(ct, 1)} Cent`;
+}
+
+function moneyEur(eur: number): string {
+  if (Math.abs(eur) < 0.005) return 'praktisch nichts';
+  return eur < 0 ? `du bekommst ${formatNumber(-eur, 2)} €` : `${formatNumber(eur, 2)} €`;
 }

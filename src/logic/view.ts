@@ -7,6 +7,15 @@ import { getFrequencyStatus, getFrequencyWindow, type FrequencyStatus, type Freq
 import { getPriceOverview, hourlyPrices, priceExtremes, type HourPrice, type PriceExtremes, type PriceOverview } from './price';
 import { getGenerationStatus, getInstalledCapacity, getMixRows, type GenerationStatus, type MixRow } from './mix';
 import { computePanic, type PanicResult } from './panic';
+import { buildHeadline, type Headline } from './headline';
+import { buildWeather, type WeatherBlock } from './weather';
+
+/** Jokes and headlines rotate every ten minutes. */
+export const SLOT_MS = 10 * 60_000;
+
+export function slotOf(now: number): string {
+  return String(Math.floor(now / SLOT_MS));
+}
 
 export interface DayView {
   dayKey: string;
@@ -17,7 +26,7 @@ export interface DayView {
 
 export interface GridView {
   frequency: FrequencyStatus | null;
-  /** Last 10 minutes for the EKG. */
+  /** Last 10 minutes for the EKG – raw 1-second values (replayed in "Netz-TV"). */
   ekg: FrequencyWindow | null;
   /** Last hour for min/max. */
   hour: FrequencyWindow | null;
@@ -27,6 +36,8 @@ export interface GridView {
   generation: GenerationStatus | null;
   mix: MixRow[];
   panic: PanicResult | null;
+  headline: Headline | null;
+  weather: WeatherBlock[];
 }
 
 function dayView(day: PriceOverview['today'] | null): DayView | null {
@@ -46,9 +57,10 @@ export function buildView(datasets: DatasetMap, now: number): GridView {
     priceEurMwh: price?.current?.value ?? null,
     renewableSharePct: generation?.renewableShareOfLoad ?? null,
   });
+  const headline = buildHeadline({ frequency, priceEurMwh: price?.current?.value ?? null, generation }, slotOf(now));
   return {
     frequency,
-    ekg: getFrequencyWindow(datasets.frequency, 10, 300),
+    ekg: getFrequencyWindow(datasets.frequency, 10, 700),
     hour: getFrequencyWindow(datasets.frequency, 60, 60),
     price,
     today: dayView(price?.today ?? null),
@@ -56,5 +68,7 @@ export function buildView(datasets: DatasetMap, now: number): GridView {
     generation,
     mix,
     panic,
+    headline,
+    weather: buildWeather(datasets, now),
   };
 }
