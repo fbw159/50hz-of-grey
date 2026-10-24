@@ -70,3 +70,20 @@ describe('Netz-Wetter', () => {
     expect(buildWeather({}, Date.now())).toEqual([]);
   });
 });
+
+describe('Netz-Wetter without tomorrow forecasts', () => {
+  it('marks blocks that only have prices as unknown weather', () => {
+    const start = startOfBerlinDay('2026-10-24');
+    const today = Array(96).fill(5000);
+    const datasets = {
+      forecastSolar: ds('forecastSolar', 'solar', start, Array(96).fill(0)),
+      forecastWindOnshore: ds('forecastWindOnshore', 'wind_onshore', start, today),
+      price: ds('price', 'day_ahead_price', start, Array(192).fill(80)),
+    };
+    const now = start + 22.5 * 3_600_000;
+    const blocks = buildWeather(datasets, now);
+    expect(blocks[0].kind).toBe('flaute'); // 5 GW wind, no sun
+    expect(blocks.slice(1).every((b) => b.kind === 'unknown' && b.priceCt === 8)).toBe(true);
+    expect(blocks).toHaveLength(4);
+  });
+});
